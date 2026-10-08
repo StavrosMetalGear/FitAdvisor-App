@@ -59,11 +59,11 @@ namespace FitAdvisor.Pages
 
             // Create message
             if (TotalCaloriesToday < SuggestedCalories)
-                Message = "You're under your Easy Plan today!";
+                Message = "You're under the historical diary target today!";
             else if (TotalCaloriesToday == SuggestedCalories)
-                Message = "You've exactly hit your Easy Plan!";
+                Message = "You've exactly hit the historical diary target!";
             else
-                Message = "You're over your Easy Plan today!";
+                Message = "You're over the historical diary target today!";
         }
 
         

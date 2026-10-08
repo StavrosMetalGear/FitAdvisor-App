@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" xmlns:views="clr-namespace:FitAdvisor.Mobile.Views" xmlns:core="clr-namespace:FitAdvisor.Core;assembly=FitAdvisor.Core" x:Class="FitAdvisor.Mobile.Views.WeightPage" x:Name="PageRoot" x:DataType="vm:WeightViewModel" Title="Weight">
+  <ScrollView x:Name="Scroller"><VerticalStackLayout Padding="24" Spacing="10">
+    <Label Text="Weight &amp; history" Style="{StaticResource Heading}" />
+    <Label Text="Local measurement date" /><DatePicker Date="{Binding Date}" Format="yyyy-MM-dd" />
+    <Label Text="Measured weight (kg)" /><Entry Text="{Binding Weight}" Keyboard="Numeric" AutomationId="WeightValue" />
+    <Label Text="Notes (optional)" /><Entry Text="{Binding Notes}" MaxLength="1000" />
+    <Label Text="Source: manual input. Multiple readings per day are allowed. Missing days remain absent." Style="{StaticResource Caption}" />
+    <Button Text="{Binding SaveLabel}" Command="{Binding SaveCommand}" AutomationId="SaveWeight" />
+    <Button Text="Clear / cancel editing" Command="{Binding CancelCommand}" />
+    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" /><Label Text="{Binding Status}" AutomationId="WeightStatus" />
+    <Label Text="History · newest first" FontAttributes="Bold" />
+    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Weights}" Spacing="16">
+      <BindableLayout.EmptyView><Label Text="No weight measurements yet." /></BindableLayout.EmptyView>
+      <BindableLayout.ItemTemplate><DataTemplate x:DataType="core:WeightRecord">
+        <VerticalStackLayout Spacing="6"><Label Text="{Binding Summary}" /><Label Text="{Binding Notes}" Style="{StaticResource Caption}" />
+          <HorizontalStackLayout Spacing="8">
+            <Button Text="Edit" Clicked="EditClicked" Command="{Binding Model.EditCommand, Source={x:Reference PageRoot}, x:DataType=views:WeightPage}" CommandParameter="{Binding .}" />
+            <Button Text="Delete" Command="{Binding Model.DeleteCommand, Source={x:Reference PageRoot}, x:DataType=views:WeightPage}" CommandParameter="{Binding .}" />
+          </HorizontalStackLayout>
+        </VerticalStackLayout>
+      </DataTemplate></BindableLayout.ItemTemplate>
+    </VerticalStackLayout>
+  </VerticalStackLayout></ScrollView>
+</ContentPage>

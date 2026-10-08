@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="FitAdvisor.Mobile.App">
+  <Application.Resources><ResourceDictionary>
+    <Color x:Key="Accent">#145E50</Color>
+    <Style TargetType="ContentPage"><Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F5F8F7, Dark=#101B18}" /></Style>
+    <Style TargetType="Label"><Setter Property="TextColor" Value="{AppThemeBinding Light=#182E27, Dark=#E7F2EC}" /><Setter Property="FontSize" Value="16" /></Style>
+    <Style TargetType="Entry"><Setter Property="TextColor" Value="{AppThemeBinding Light=#182E27, Dark=#E7F2EC}" /><Setter Property="PlaceholderColor" Value="{AppThemeBinding Light=#4F625C, Dark=#A0B5AC}" /></Style>
+    <Style TargetType="Picker"><Setter Property="TextColor" Value="{AppThemeBinding Light=#182E27, Dark=#E7F2EC}" /></Style>
+    <Style TargetType="DatePicker"><Setter Property="TextColor" Value="{AppThemeBinding Light=#182E27, Dark=#E7F2EC}" /></Style>
+    <Style TargetType="Button"><Setter Property="BackgroundColor" Value="{StaticResource Accent}" /><Setter Property="TextColor" Value="White" /><Setter Property="CornerRadius" Value="10" /><Setter Property="MinimumHeightRequest" Value="48" /></Style>
+    <Style x:Key="Heading" TargetType="Label"><Setter Property="FontSize" Value="26" /><Setter Property="FontAttributes" Value="Bold" /></Style>
+    <Style x:Key="Caption" TargetType="Label"><Setter Property="FontSize" Value="14" /></Style>
+  </ResourceDictionary></Application.Resources>
+</Application>

@@ -1,23 +1,29 @@
 ﻿@page
 @model FitAdvisor.Pages.CaloriePlanModel
 
-<h2>Your Calorie Plans</h2>
+<h2>Historical Calorie Plan Comparison</h2>
 
-@if (Model != null)
+<p>These historical outputs contain a known double-deficit defect: they assume age 30 and activity multiplier 1.5, then apply two successive 20% reductions with intermediate truncation. They are shown for comparison, not as corrected recommendations. The meal diary has a separate historical target. <a asp-page="/NutritionCalculator">Calculate with explicit inputs</a>.</p>
+<p>Body fat values are approximate BMI-based estimates, not precise medical measurements. Target body fat is a hypothetical estimate at your target weight.</p>
+@if (Model.CalculationError != null)
+{
+    <p class="text-danger">@Model.CalculationError</p>
+}
+else
 {
     <p><strong>Current Weight:</strong> @Model.Weight kg</p>
     <p><strong>Target Weight:</strong> @Model.TargetWeight kg</p>
     <p><strong>Height:</strong> @Model.Height cm</p>
 
-    <h3>Recommended Plans:</h3>
+    <h3>Historical outputs:</h3>
     <ul>
         <li><strong>Easy:</strong> @Model.EasyCalories kcal/day</li>
         <li><strong>Medium:</strong> @Model.MediumCalories kcal/day</li>
         <li><strong>Hard:</strong> @Model.HardCalories kcal/day</li>
     </ul>
     <h3>Body Fat Estimates</h3>
-    <p><strong>Current Body Fat:</strong> @Model.CurrentBodyFat%</p>
-    <p><strong>Target Body Fat:</strong> @Model.TargetBodyFat%</p>
+    <p><strong>Current Body Fat:</strong> @(double.IsNaN(Model.CurrentBodyFat) ? "Unavailable" : Model.CurrentBodyFat.ToString("F1") + "%")</p>
+    <p><strong>Target Body Fat:</strong> @(double.IsNaN(Model.TargetBodyFat) ? "Unavailable" : Model.TargetBodyFat.ToString("F1") + "%")</p>
 
 }
 

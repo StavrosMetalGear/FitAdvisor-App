@@ -30,8 +30,9 @@
 <hr />
 <h3>Today's Meals</h3>
 <p><strong>Total Calories Today:</strong> @Model.TotalCaloriesToday</p>
-<p><strong>Easy Plan Target:</strong> @Model.SuggestedCalories</p>
+<p><strong>Historical diary target (age 30, multiplier 1.2):</strong> @Model.SuggestedCalories</p>
 <p><em>@Model.Message</em></p>
+<p>This historical diary target differs from the old calorie-plan screen. <a asp-page="/NutritionCalculator">Use explicit inputs for corrected calculations</a>. Existing records are unchanged.</p>
 
 
 @if (Model.TodayMeals.Any())

@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Personal mobile data and signing keys
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.keystore
+*.jks

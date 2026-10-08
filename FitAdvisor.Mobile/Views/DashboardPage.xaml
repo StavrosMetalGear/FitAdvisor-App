@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" x:Class="FitAdvisor.Mobile.Views.DashboardPage" x:DataType="vm:DashboardViewModel" Title="Today">
+  <ScrollView><VerticalStackLayout Padding="24" Spacing="14">
+    <Label Text="FitAdvisor" Style="{StaticResource Heading}" />
+    <Label Text="{Binding DateText}" />
+    <Label Text="Daily calorie target" Style="{StaticResource Caption}" /><Label Text="{Binding TargetText}" FontSize="30" FontAttributes="Bold" />
+    <Label Text="Calories consumed" Style="{StaticResource Caption}" /><Label Text="{Binding ConsumedText}" FontSize="24" />
+    <Label Text="{Binding RemainingText}" FontSize="24" />
+    <Label Text="{Binding ContextText}" />
+    <Label Text="Food allowance equals your daily target. Exercise calories are not added in this increment." Style="{StaticResource Caption}" />
+    <Button Text="Add meal" Clicked="MealsClicked" />
+    <Button Text="Log weight" Clicked="WeightClicked" />
+    <Button Text="Create or edit profile" Clicked="ProfileClicked" />
+    <Button Text="Refresh today" Command="{Binding RefreshCommand}" />
+    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+    <Label Text="{Binding Status}" AutomationId="DashboardStatus" />
+    <Label Text="Saved on this device. No account or connection required." Style="{StaticResource Caption}" />
+  </VerticalStackLayout></ScrollView>
+</ContentPage>

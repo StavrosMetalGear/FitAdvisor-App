@@ -1,0 +1,34 @@
+@page
+@model FitAdvisor.Pages.NutritionCalculatorModel
+@using FitAdvisor.Core
+@{ ViewData["Title"] = "Nutrition calculator"; }
+<h1>Nutrition calculator</h1>
+<p>Adult estimates using kg, cm, years, and kcal. These inputs are used for this calculation only and are not saved to your profile.</p>
+<form method="post" class="col-md-7">
+    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    <label asp-for="Input.WeightKg">Weight (kg)</label><input asp-for="Input.WeightKg" type="number" step="any" class="form-control" />
+    <label asp-for="Input.HeightCm">Height (cm)</label><input asp-for="Input.HeightCm" type="number" step="any" class="form-control" />
+    <label asp-for="Input.AgeYears">Age (years)</label><input asp-for="Input.AgeYears" class="form-control" />
+    <label asp-for="Input.Sex">Sex coefficient used by the formula</label><select asp-for="Input.Sex" asp-items="Html.GetEnumSelectList<FormulaSex>()" class="form-select"><option value="">Choose a coefficient</option></select>
+    <label asp-for="Input.ActivityMultiplier">Activity multiplier</label><input asp-for="Input.ActivityMultiplier" type="number" step="any" class="form-control" />
+    <label asp-for="Input.GoalAdjustmentKcal">Daily goal adjustment (kcal; negative for a deficit)</label><input asp-for="Input.GoalAdjustmentKcal" type="number" step="any" class="form-control" />
+    <label asp-for="Input.Accounting">Activity accounting</label><select asp-for="Input.Accounting" asp-items="Html.GetEnumSelectList<ActivityAccounting>()" class="form-select"></select>
+    <label asp-for="Input.ActivityKcal">Estimated activity calories (kcal)</label><input asp-for="Input.ActivityKcal" type="number" step="any" class="form-control" />
+    <label asp-for="Input.ExerciseCreditFraction">Exercise credit fraction (0 = off, 0.5 = half, 1 = all)</label><input asp-for="Input.ExerciseCreditFraction" type="number" step="any" class="form-control" />
+    <p>When your multiplier includes exercise, keep credit at zero. To add exercise calories, choose a baseline excluding exercise and supply calories above that baseline; gross workout calories can include energy already counted. Allowance = target + estimated activity calories × credit fraction. Defaults add no exercise calories.</p>
+    <button class="btn btn-primary" type="submit">Calculate</button>
+</form>
+@if (Model.Result is { } result)
+{
+    <h2>Estimates</h2>
+    <dl>
+        <dt>Resting energy</dt><dd>@result.RestingKcal.ToString("F0") kcal/day</dd>
+        <dt>Maintenance</dt><dd>@result.MaintenanceKcal.ToString("F0") kcal/day</dd>
+        <dt>Daily calorie target</dt><dd>@result.TargetKcal.ToString("F0") kcal</dd>
+        <dt>Estimated activity</dt><dd>@result.ActivityKcal.ToString("F0") kcal</dd>
+        <dt>Food allowance</dt><dd>@result.FoodAllowanceKcal.ToString("F0") kcal</dd>
+        <dt>Calories consumed</dt><dd>Not included in this calculator; see your meal diary.</dd>
+        <dt>Body fat estimate</dt><dd>@(Model.BodyFat?.Percentage?.ToString("F1") ?? "Unavailable")%</dd>
+    </dl>
+    <p>Body fat is an approximate BMI-based algorithm estimate, not a precise medical measurement. Version: @Model.BodyFat?.AlgorithmVersion. Activity multipliers and goal adjustments are assumptions, not measured energy needs. Input bounds are application limits, not evidence that every accepted target is appropriate.</p>
+}

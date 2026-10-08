@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="FitAdvisor.Mobile.csproj" />
+  <Project Path="../FitAdvisor.Core/FitAdvisor.Core.csproj" />
+  <Project Path="../FitAdvisor.Storage/FitAdvisor.Storage.csproj" />
+</Solution>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" xmlns:views="clr-namespace:FitAdvisor.Mobile.Views" xmlns:core="clr-namespace:FitAdvisor.Core;assembly=FitAdvisor.Core" x:Class="FitAdvisor.Mobile.Views.MealsPage" x:Name="PageRoot" x:DataType="vm:MealsViewModel" Title="Meals">
+  <ScrollView x:Name="Scroller"><VerticalStackLayout Padding="24" Spacing="10">
+    <Label Text="Meal diary" Style="{StaticResource Heading}" />
+    <Label Text="Local diary date" /><DatePicker Date="{Binding Date}" Format="yyyy-MM-dd" />
+    <Button Text="Show meals for selected date" Command="{Binding LoadCommand}" />
+    <Label Text="Meal or food name" /><Entry Text="{Binding Name}" MaxLength="200" AutomationId="MealName" />
+    <Label Text="Quantity" /><Entry Text="{Binding Quantity}" Keyboard="Numeric" />
+    <Label Text="Quantity unit (g, ml, serving, etc.)" /><Entry Text="{Binding Unit}" MaxLength="30" />
+    <Label Text="Total calories for this quantity (kcal)" /><Entry Text="{Binding Calories}" Keyboard="Numeric" AutomationId="MealCalories" />
+    <Label Text="Enter nutrition totals for the entire quantity above, not per 100 g or per serving. Quantity is recorded for context; it does not multiply your entered calories." Style="{StaticResource Caption}" />
+    <Label Text="Total protein (g, optional)" /><Entry Text="{Binding Protein}" Keyboard="Numeric" />
+    <Label Text="Total carbohydrates (g, optional)" /><Entry Text="{Binding Carbs}" Keyboard="Numeric" />
+    <Label Text="Total fat (g, optional)" /><Entry Text="{Binding Fat}" Keyboard="Numeric" />
+    <Button Text="{Binding SaveLabel}" Command="{Binding SaveCommand}" AutomationId="SaveMeal" />
+    <Button Text="Clear / cancel editing" Command="{Binding CancelCommand}" />
+    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" /><Label Text="{Binding Status}" AutomationId="MealStatus" />
+    <Label Text="{Binding DayText}" FontAttributes="Bold" />
+    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Meals}" Spacing="16">
+      <BindableLayout.EmptyView><Label Text="No meal entries on this date." /></BindableLayout.EmptyView>
+      <BindableLayout.ItemTemplate><DataTemplate x:DataType="core:MealRecord">
+        <VerticalStackLayout Spacing="6">
+          <Label Text="{Binding Summary}" /><Label Text="{Binding Macros}" Style="{StaticResource Caption}" />
+          <HorizontalStackLayout Spacing="8">
+            <Button Text="Edit" Clicked="EditClicked" Command="{Binding Model.EditCommand, Source={x:Reference PageRoot}, x:DataType=views:MealsPage}" CommandParameter="{Binding .}" />
+            <Button Text="Delete" Command="{Binding Model.DeleteCommand, Source={x:Reference PageRoot}, x:DataType=views:MealsPage}" CommandParameter="{Binding .}" />
+          </HorizontalStackLayout>
+        </VerticalStackLayout>
+      </DataTemplate></BindableLayout.ItemTemplate>
+    </VerticalStackLayout>
+  </VerticalStackLayout></ScrollView>
+</ContentPage>

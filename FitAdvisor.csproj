@@ -21,4 +21,10 @@
     <Folder Include="NewFolder\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="FitAdvisor.Core/**/*.cs;FitAdvisor.Storage/**/*.cs;FitAdvisor.Mobile/**/*.cs;verification/**/*.cs" />
+    <Content Remove="FitAdvisor.Core/**;FitAdvisor.Storage/**;FitAdvisor.Mobile/**;verification/**" />
+    <None Remove="FitAdvisor.Core/**;FitAdvisor.Storage/**;FitAdvisor.Mobile/**;verification/**" />
+    <ProjectReference Include="FitAdvisor.Core/FitAdvisor.Core.csproj" />
+  </ItemGroup>
 </Project>
