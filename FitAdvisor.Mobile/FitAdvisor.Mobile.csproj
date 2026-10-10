@@ -8,6 +8,9 @@
     <ApplicationDisplayVersion>0.2.0</ApplicationDisplayVersion><ApplicationVersion>2</ApplicationVersion>
     <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <!-- Offline APKs do not need debugger/profiler network access. -->
+    <AndroidNeedsInternetPermission>false</AndroidNeedsInternetPermission>
+    <AndroidIncludeDebugSymbols>false</AndroidIncludeDebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <MauiIcon Include="Resources/AppIcon/appicon.svg" ForegroundFile="Resources/AppIcon/appiconfg.svg" Color="#145E50" />

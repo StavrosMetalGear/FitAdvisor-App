@@ -2,12 +2,13 @@ using FitAdvisor.Mobile.Views;
 namespace FitAdvisor.Mobile;
 public partial class AppShell : Shell
 {
-    public AppShell(DashboardPage dashboard, ProfilePage profile, MealsPage meals, WeightPage weight)
+    public AppShell(DashboardPage dashboard, ProfilePage profile, MealsPage meals, WeightPage weight, WorkoutsPage workouts, DataPage data)
     {
         InitializeComponent();
         var tabs = new TabBar { Route = "main" };
         Add(tabs, "Today", "today", dashboard); Add(tabs, "Profile", "profile", profile);
-        Add(tabs, "Meals", "meals", meals); Add(tabs, "Weight", "weight", weight); Items.Add(tabs);
+        Add(tabs, "Meals", "meals", meals); Add(tabs, "Weight", "weight", weight);
+        Add(tabs, "Workouts", "workouts", workouts); Add(tabs, "Data", "data", data); Items.Add(tabs);
     }
     private static void Add(TabBar bar, string title, string route, ContentPage page)
     {

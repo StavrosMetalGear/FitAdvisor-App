@@ -8,7 +8,7 @@ namespace FitAdvisor.Storage;
 
 // Each operation uses a short-lived, unpooled connection on a worker thread.
 // No credentials, network service or web database are involved.
-public sealed class SqlitePersonalDiary : IPersonalDiary
+public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
 {
     public const string TargetFormulaVersion = "mifflin-st-jeor-goal-adjustment-v1";
     private readonly string connectionString;
@@ -48,7 +48,7 @@ public sealed class SqlitePersonalDiary : IPersonalDiary
         using var tx = db.BeginTransaction();
         using var version = Command(db, "PRAGMA user_version", tx);
         var current = Convert.ToInt32(version.ExecuteScalar(), CultureInfo.InvariantCulture);
-        if (current > 1) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
+        if (current > 2) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
         if (current == 0)
         {
             using var create = Command(db, """
@@ -73,6 +73,19 @@ public sealed class SqlitePersonalDiary : IPersonalDiary
                 PRAGMA user_version = 1;
                 """, tx);
             create.ExecuteNonQuery();
+        }
+        if (current < 2)
+        {
+            using var workouts = Command(db, """
+                CREATE TABLE workouts (
+                    id TEXT PRIMARY KEY, local_date TEXT NOT NULL, source TEXT NOT NULL,
+                    source_package TEXT, external_id TEXT, payload TEXT NOT NULL);
+                CREATE INDEX workouts_date ON workouts(local_date);
+                CREATE UNIQUE INDEX workouts_import ON workouts(source,source_package,external_id)
+                    WHERE external_id IS NOT NULL;
+                PRAGMA user_version = 2;
+                """, tx);
+            workouts.ExecuteNonQuery();
         }
         tx.Commit();
     }

@@ -18,7 +18,7 @@ From the repository root:
 
     dotnet build FitAdvisor.Mobile/FitAdvisor.Mobile.csproj -c Debug -t:SignAndroidPackage -p:EmbedAssembliesIntoApk=true
 
-Find the signed APK in FitAdvisor.Mobile/bin/Debug/net10.0-android/ (filename com.stavros.fitadvisor-Signed.apk). Use the signed variant. EmbedAssembliesIntoApk makes this a standalone APK instead of relying on Visual Studio fast deployment. The generated Debug manifest includes INTERNET for debugger support; the tracking code makes no network calls and requests no runtime permissions. Debug signing is suitable for personal development/testing; no Play account is needed for USB installation. It is not a production release distribution signature.
+Find the signed APK in FitAdvisor.Mobile/bin/Debug/net10.0-android/ (filename com.stavros.fitadvisor-Signed.apk). Use the signed variant. EmbedAssembliesIntoApk makes this a standalone APK instead of relying on Visual Studio fast deployment. The offline build disables Android debugging/debug-symbol support and explicitly removes INTERNET during manifest merging; IDE debugger attachment is unavailable. The workout increment adds only Health Connect READ_EXERCISE, requested at runtime by the Import button. Debug signing is suitable for personal development/testing; no Play account is needed for USB installation. It is not a production release distribution signature. See the [Android privacy audit](android-privacy-audit.md) for dependency, data-flow and artifact verification details.
 
 ## Install on your phone
 1. Enable Developer options (typically tap Build number seven times), then USB debugging. Connect the phone by USB and accept its debugging authorization prompt.
@@ -31,11 +31,38 @@ Find the signed APK in FitAdvisor.Mobile/bin/Debug/net10.0-android/ (filename co
 
        & 'C:\Program Files (x86)\Android\android-sdk\platform-tools\adb.exe' devices -l
 
-Alternatively, copy the signed APK to the phone, open it from a file manager and allow that installer app to install unknown apps if Android asks. Turn that installer permission off afterward if desired. Keep the same application ID and signing key for upgrades. adb install -r updates in place; uninstalling or clearing app storage removes the local database. Export/backup UI is not implemented yet.
+Alternatively, copy the signed APK to the phone, open it from a file manager and allow that installer app to install unknown apps if Android asks. Turn that installer permission off afterward if desired. Keep the same application ID and signing key for upgrades. adb install -r updates in place; uninstalling or clearing app storage removes the local database. The Data tab now supports encrypted export and validated restore; see [local data and workouts](offline-data-and-workouts.md).
 
-## Tonight’s handoff status
+## Current closeout status (2026-10-09)
 
-The final standalone Debug APK built with zero warnings/errors. Its v1/v2/v3 signatures verified successfully; the verifier emitted META-INF warnings for the v1 scheme. The APK is 86,361,668 bytes. Calculation, SQLite persistence/process-restart, reflection-disabled serialization and web HTTP checks passed. The earlier Release ARM64 link/AOT build passed with binding warnings; source fixes are saved, but a final Release rebuild is deferred. No phone or running emulator is connected, so no installation, native visual, airplane-mode or on-device restart check has been performed. The changes are saved in the workspace and remain uncommitted.
+The final Release ARM64 linking/AOT build and standalone signed Debug APK rebuild both passed with zero warnings/errors. The previous eight binding warnings are resolved. The rebuilt Debug APK's v1/v2/v3 signatures verified successfully with no verifier warnings this time. Earlier calculation/persistence/web results are retained; those checks were not rerun because no application code changed. See [MVP closeout](mvp-closeout.md) for the review, pending phone checklist and unimplemented running/gym proposal. Real-device acceptance is pending.
+
+Exact Debug APK path:
+
+    C:\Users\stavr\source\repos\FitAdvisor\FitAdvisor.Mobile\bin\Debug\net10.0-android\com.stavros.fitadvisor-Signed.apk
+
+Historical 2026-10-09 artifact: size 86,018,730 bytes; SHA-256 `521964EDF7EAE716B355B6846D7A190429E42D7FC72C6C13E8771BAC35093935`. The 2026-10-10 privacy rebuild replaces this file; use the current hashes in the [Android privacy audit](android-privacy-audit.md).
+Debug signing certificate SHA-256: `182049d70b00e02274148eb20c103d49d539c37b29372aef240def3d03dfae70`.
+The historical APK was built from reviewed source at HEAD `32e44a0195646ad6100732a79c5b29a9a70658ea`. The 2026-10-10 rebuild adds offline manifest/build settings; application data and calculation code are unchanged.
+
+Exact PowerShell installation commands (substitute the phone serial shown by devices):
+
+```powershell
+$adb = 'C:\Program Files (x86)\Android\android-sdk\platform-tools\adb.exe'
+& $adb devices -l
+& $adb -s PHONE_SERIAL install -r 'C:\Users\stavr\source\repos\FitAdvisor\FitAdvisor.Mobile\bin\Debug\net10.0-android\com.stavros.fitadvisor-Signed.apk'
+& $adb -s PHONE_SERIAL shell monkey -p com.stavros.fitadvisor -c android.intent.category.LAUNCHER 1
+```
+
+Use the explicit phone serial if the emulator is also running. Do not uninstall or clear storage. Export and verify an encrypted backup before risking existing data.
+
+Final Release verification command:
+
+    dotnet build FitAdvisor.Mobile/FitAdvisor.Mobile.csproj -c Release -r android-arm64 -p:AndroidPackageFormats=apk
+
+Release artifact: `FitAdvisor.Mobile/bin/Release/net10.0-android/android-arm64/com.stavros.fitadvisor-Signed.apk` (historical 2026-10-09 size: 18,813,292 bytes; replaced by the 2026-10-10 privacy rebuild, with current hash/size in the [Android privacy audit](android-privacy-audit.md)). This build used development signing defaults; no user-owned production keystore was configured. Do not treat it as production distribution or as tested ARM64 runtime behavior. Historical logs: `artifacts/mvp-release-arm64.log` and `artifacts/mvp-debug-apk.log` (ignored build artifacts).
+
+Existing warnings are separate: the previous web build reported 13 nullable warnings (web was not rebuilt here); the prior APK verifier emitted v1 META-INF warnings (not reproduced here). Linker advice about testing optimized assemblies is informational. Emulator startup snapshot/INI/Qt/offline messages are emulator diagnostics, not application build warnings.
 
 ## First use
 - Profile: enter name, calculation weight in kg, height in cm, age in whole years, formula sex coefficient, activity multiplier, optional target weight and signed daily kcal adjustment. Save. Zero adjustment means estimated maintenance; negative means a deficit. Target weight does not automatically select a deficit.
@@ -44,7 +71,7 @@ The final standalone Debug APK built with zero warnings/errors. Its v1/v2/v3 sig
 - Today: target, logged calories and remaining allowance refresh when returning to the tab, or with Refresh today. A negative remainder is shown as kcal over allowance. Empty diary means no logged data, not confirmed fasting. No exercise calories are credited in this increment.
 - Profile edits create retained revisions and update the target for that date. Earlier target snapshots remain intact, and existing entries retain their original profile revision on same-date edits. Moving an entry to another date adopts the destination date's context. Weight entries do not silently change the profile calculation weight; update that field explicitly.
 
-Data is in FileSystem.AppDataDirectory/fitadvisor.db, an app-private SQLite file. Android automatic backup is disabled to keep this increment local. Uninstall and clear-storage actions delete it; ordinary app closure, force-stop, phone restart and same-signature APK upgrades should retain it. The separate-process storage test verified reopen persistence; the following phone test remains necessary for native lifecycle/UI verification.
+Data is in FileSystem.AppDataDirectory/fitadvisor.db, an app-private SQLite file. Android automatic backup is disabled. The Data tab exports a passphrase-encrypted file to your chosen document destination and restores validated backups after confirmation. Workouts use an additive schema-v2 migration; existing diary records and targets are preserved. Health Connect import on Android 14+ requests only exercise read access when tapped. INTERNET remains absent. Uninstall and clear-storage actions delete the local database; ordinary app closure, force-stop, phone restart and same-signature APK upgrades should retain it. The separate-process storage test verified reopen persistence; the following phone test remains necessary for native lifecycle/UI verification.
 
 ## Checks
 Run builds sequentially because they share Core output files:

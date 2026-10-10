@@ -60,4 +60,5 @@ public sealed class MealsViewModel : ViewModelBase
     {
         editing = null; Name = ""; Quantity = "1"; Unit = "serving"; Calories = ""; Protein = ""; Carbs = ""; Fat = ""; Notify(nameof(SaveLabel));
     }
+    public void ResetAfterRestore() { Clear(); listDate = null; Meals.Clear(); Notify(nameof(DayText)); Status = ""; }
 }

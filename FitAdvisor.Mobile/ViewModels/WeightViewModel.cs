@@ -43,4 +43,5 @@ public sealed class WeightViewModel : ViewModelBase
         await diary.DeleteWeightAsync(value.Id); if (editing == value.Id) Clear(); await LoadAsync(); Status = "Weight deleted.";
     }
     private void Clear() { editing = null; Weight = ""; Notes = ""; Notify(nameof(SaveLabel)); }
+    public void ResetAfterRestore() { Clear(); Weights.Clear(); Status = ""; }
 }

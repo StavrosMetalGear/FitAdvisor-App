@@ -31,6 +31,11 @@ public sealed class ProfileViewModel : ViewModelBase
         else { Multiplier = Display(1.2); Adjustment = Display(0); }
         await ShowHistory(); loaded = true;
     }
+    public void Invalidate()
+    {
+        loaded = false; Name = Weight = Height = Age = TargetWeight = EstimateText = HistoryText = "";
+        SexIndex = -1; Multiplier = Display(1.2); Adjustment = Display(0);
+    }
     private void ShowEstimate(ProfileDraft p)
     {
         var result = p.Calculate();

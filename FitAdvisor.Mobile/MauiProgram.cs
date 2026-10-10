@@ -3,13 +3,19 @@ using FitAdvisor.Storage;
 using FitAdvisor.Mobile.ViewModels;
 using FitAdvisor.Mobile.Views;
 using Microsoft.Extensions.Logging;
+using FitAdvisor.Mobile.Services;
 namespace FitAdvisor.Mobile;
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder().UseMauiApp<App>();
-        builder.Services.AddSingleton<IPersonalDiary>(_ => new SqlitePersonalDiary(Path.Combine(FileSystem.AppDataDirectory, "fitadvisor.db")));
+        builder.Services.AddSingleton(_ => new SqlitePersonalDiary(Path.Combine(FileSystem.AppDataDirectory, "fitadvisor.db")));
+        builder.Services.AddSingleton<IPersonalDiary>(s => s.GetRequiredService<SqlitePersonalDiary>());
+        builder.Services.AddSingleton<IWorkoutDiary>(s => s.GetRequiredService<SqlitePersonalDiary>());
+        builder.Services.AddSingleton<IBackupDocuments, AndroidBackupDocuments>();
+        builder.Services.AddSingleton<IHealthSessionReader, AndroidHealthSessionReader>();
+        builder.Services.AddSingleton<WorkoutsPage>(); builder.Services.AddSingleton<DataPage>();
         builder.Services.AddSingleton<IUserDialogs, MauiUserDialogs>();
         builder.Services.AddSingleton<DashboardViewModel>(); builder.Services.AddSingleton<ProfileViewModel>();
         builder.Services.AddSingleton<MealsViewModel>(); builder.Services.AddSingleton<WeightViewModel>();
