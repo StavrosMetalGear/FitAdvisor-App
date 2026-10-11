@@ -1,0 +1,16 @@
+CC0 1.0 Universal
+
+The eight SVG illustrations in this directory (running, gym_training,
+muay_thai, cycling, hiking, programming, music, pull_ups) are original
+artwork created for FitAdvisor, without third-party source assets.
+
+To the extent possible under law, all copyright and related or neighboring
+rights to these eight illustrations are waived under the CC0 1.0 Universal
+Public Domain Dedication. You may copy, modify, distribute and use them,
+including commercially, without permission or attribution.
+
+License reference: https://creativecommons.org/publicdomain/zero/1.0/
+Legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+This dedication applies only to the eight SVG illustrations, not to other
+source code or files in this repository.

@@ -18,7 +18,7 @@ public sealed class MealsViewModel : ViewModelBase
     public string Protein { get => protein; set => Set(ref protein, value); }
     public string Carbs { get => carbs; set => Set(ref carbs, value); }
     public string Fat { get => fat; set => Set(ref fat, value); }
-    public string SaveLabel => editing == null ? "Add meal" : "Save meal changes";
+    public string SaveLabel => editing == null ? "Add meal" : "Save changes";
     public ObservableCollection<MealRecord> Meals { get; } = new();
     public Command SaveCommand { get; }
     public Command CancelCommand { get; }

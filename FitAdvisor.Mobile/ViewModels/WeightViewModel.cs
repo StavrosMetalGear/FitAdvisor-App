@@ -11,7 +11,7 @@ public sealed class WeightViewModel : ViewModelBase
     public DateTime Date { get => date; set => Set(ref date, value); }
     public string Weight { get => weight; set => Set(ref weight, value); }
     public string Notes { get => notes; set => Set(ref notes, value); }
-    public string SaveLabel => editing == null ? "Add weight" : "Save weight changes";
+    public string SaveLabel => editing == null ? "Add weight" : "Save changes";
     public ObservableCollection<WeightRecord> Weights { get; } = new();
     public Command SaveCommand { get; }
     public Command CancelCommand { get; }

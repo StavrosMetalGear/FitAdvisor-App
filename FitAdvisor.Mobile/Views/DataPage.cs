@@ -16,22 +16,29 @@ public sealed class DataPage : ContentPage
     private readonly Entry confirmation = new() { Placeholder = "Repeat passphrase for export", IsPassword = true };
     private readonly Label status = new();
     private bool busy;
-    private readonly Button export = new() { Text = "Export encrypted backup" };
-    private readonly Button restore = new() { Text = "Restore from backup" };
+    private readonly Button export = new() { Text = "Export backup" };
+    private readonly Button restore = new() { Text = "Restore" };
     public DataPage(SqlitePersonalDiary diary, IBackupDocuments documents, ProfileViewModel profile,
         MealsViewModel meals, WeightViewModel weights, WorkoutsPage workouts)
     {
         this.diary = diary; this.documents = documents; this.profile = profile;
-        this.meals = meals; this.weights = weights; this.workouts = workouts; Title = "Data";
+        this.meals = meals; this.weights = weights; this.workouts = workouts; Title = "Backup / Restore";
         export.Clicked += async (_, _) => await RunAsync(ExportAsync);
         restore.Clicked += async (_, _) => await RunAsync(RestoreAsync);
-        Content = new ScrollView { Content = new VerticalStackLayout { Padding = 20, Spacing = 12, Children = {
-            new Label { Text = "Your backup", FontSize = 24 },
+        var layout = new VerticalStackLayout { Padding = 20, Spacing = 12, Children = {
+            new Label { Text = "Your backup", FontSize = 26, FontAttributes = FontAttributes.Bold },
             new Label { Text = "Includes all profiles, daily targets, meals, weights and workouts. The backup is encrypted with your passphrase. Keep the passphrase somewhere safe: it cannot be recovered." },
             new Label { Text = "Choose on-device storage to keep the file on this phone. Android's document provider controls the destination; another provider may store the encrypted file elsewhere. FitAdvisor has no Internet permission." },
-            password, confirmation, export,
+            new Label { Text = "Backup passphrase (at least 12 characters)" }, password, new Label { Text = "Repeat passphrase for export" }, confirmation, export,
             new Label { Text = "Restore replaces all current records with the backup. Export your current data first. A valid backup is previewed before you confirm replacement. Existing data stays intact if validation or restore fails." },
-            restore, status } } };
+            restore, status } };
+        var explanation = new VerticalStackLayout { Spacing = 10 };
+        for (var i = 0; i < 3; i++)
+        {
+            var child = (View)layout.Children[0]; layout.Children.RemoveAt(0); explanation.Add(child);
+        }
+        layout.Children.Insert(0, DesignComponents.Card(explanation));
+        Content = new ScrollView { Content = layout };
     }
     private async Task RunAsync(Func<Task> action)
     {

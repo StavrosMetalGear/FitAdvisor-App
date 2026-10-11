@@ -15,7 +15,7 @@
   <ItemGroup>
     <MauiIcon Include="Resources/AppIcon/appicon.svg" ForegroundFile="Resources/AppIcon/appiconfg.svg" Color="#145E50" />
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#145E50" BaseSize="128,128" />
-    <MauiFont Include="Resources/Fonts/*" />
+    <MauiImage Include="Resources/Images/*.svg" /><MauiFont Include="Resources/Fonts/*" />
     <MauiAsset Include="Resources/Raw/**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="MainPage.xaml.cs" /><MauiXaml Remove="MainPage.xaml" />
     <ProjectReference Include="../FitAdvisor.Core/FitAdvisor.Core.csproj" />

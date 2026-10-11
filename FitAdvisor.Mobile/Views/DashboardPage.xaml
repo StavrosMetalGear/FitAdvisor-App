@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" x:Class="FitAdvisor.Mobile.Views.DashboardPage" x:DataType="vm:DashboardViewModel" Title="Today">
-  <ScrollView><VerticalStackLayout Padding="24" Spacing="14">
-    <Label Text="FitAdvisor" Style="{StaticResource Heading}" />
-    <Label Text="{Binding DateText}" />
-    <Label Text="Daily calorie target" Style="{StaticResource Caption}" /><Label Text="{Binding TargetText}" FontSize="30" FontAttributes="Bold" />
-    <Label Text="Calories consumed" Style="{StaticResource Caption}" /><Label Text="{Binding ConsumedText}" FontSize="24" />
-    <Label Text="{Binding RemainingText}" FontSize="24" />
-    <Label Text="{Binding ContextText}" />
-    <Label Text="Food allowance equals your daily target. Exercise calories are not added in this increment." Style="{StaticResource Caption}" />
-    <Button Text="Add meal" Clicked="MealsClicked" />
-    <Button Text="Log weight" Clicked="WeightClicked" />
-    <Button Text="Create or edit profile" Clicked="ProfileClicked" />
-    <Button Text="Refresh today" Command="{Binding RefreshCommand}" />
-    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-    <Label Text="{Binding Status}" AutomationId="DashboardStatus" />
-    <Label Text="Saved on this device. No account or connection required." Style="{StaticResource Caption}" />
-  </VerticalStackLayout></ScrollView>
-</ContentPage>
+<ScrollView><VerticalStackLayout Padding="20" Spacing="16">
+<Grid ColumnDefinitions="*,56" ColumnSpacing="12"><VerticalStackLayout Spacing="4"><Label Text="Your day, at a glance" Style="{StaticResource Heading}" /><Label Text="{Binding DateText}" Style="{StaticResource Caption}" /></VerticalStackLayout><Image Grid.Column="1" Source="running.png" HeightRequest="56" WidthRequest="56" InputTransparent="True" AutomationProperties.IsInAccessibleTree="False" /></Grid>
+<Border Style="{StaticResource Card}"><VerticalStackLayout Spacing="12"><Label Text="Daily calorie target" Style="{StaticResource Caption}" /><Label Text="{Binding TargetText}" FontSize="28" FontAttributes="Bold" /><BoxView HeightRequest="1" Color="{AppThemeBinding Light=#CEDAD3, Dark=#42584B}" /><Label Text="Calories consumed" Style="{StaticResource Caption}" /><Label Text="{Binding ConsumedText}" FontSize="22" FontAttributes="Bold" /><Label Text="{Binding RemainingText}" FontSize="18" /><Label Text="{Binding ContextText}" Style="{StaticResource Caption}" /></VerticalStackLayout></Border>
+<Button Text="Add meal" Clicked="MealsClicked" /><Button Text="Log weight" Clicked="WeightClicked" Style="{StaticResource SecondaryButton}" />
+<Border x:Name="MessageCard" Style="{StaticResource Card}" IsVisible="False"><VerticalStackLayout Spacing="8"><Label Text="A little encouragement" FontAttributes="Bold" /><Label x:Name="DailyMessage" /><Label Text="Original words · a new message each day" Style="{StaticResource Caption}" /></VerticalStackLayout></Border>
+<Label Text="Food allowance equals your daily target. Exercise calories are not added." Style="{StaticResource Caption}" /><Button Text="Edit profile" Clicked="ProfileClicked" Style="{StaticResource SecondaryButton}" /><Button Text="Refresh today" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" /><ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" /><Label Text="{Binding Status}" AutomationId="DashboardStatus" /><Label Text="Saved on this device. No account or connection required." Style="{StaticResource Caption}" />
+</VerticalStackLayout></ScrollView></ContentPage>

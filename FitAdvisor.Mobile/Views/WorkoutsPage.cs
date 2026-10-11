@@ -28,6 +28,10 @@ public sealed class WorkoutsPage : ContentPage
     private readonly Label status = new();
     private readonly Button save = new() { Text = "Add workout" };
     private readonly VerticalStackLayout form;
+    private ScrollView scroller = null!;
+    private Label importHeading = null!;
+    private bool focusImport;
+    public void RequestImportSection() => focusImport = true;
     private WorkoutRecord? editing;
     private Guid? editingSet;
     private bool busy;
@@ -48,38 +52,51 @@ public sealed class WorkoutsPage : ContentPage
             catch (ArgumentException e) { status.Text = e.Message; }
         };
         gymForm.Add(new Label { Text = "Strength sets (external load only)" });
-        gymForm.Add(exercise); gymForm.Add(reps); gymForm.Add(load);
-        gymForm.Add(new HorizontalStackLayout { Children = { warmup, new Label { Text = "Warm-up set", VerticalOptions = LayoutOptions.Center } } });
-        addSet.Text = "Save strength set"; gymForm.Add(addSet); gymForm.Add(setsView);
+        gymForm.Add(new Label { Text = "Exercise name" }); gymForm.Add(exercise); gymForm.Add(new Label { Text = "Repetitions" }); gymForm.Add(reps); gymForm.Add(new Label { Text = "External load (kg)" }); gymForm.Add(load);
+        var warmupRow = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Auto), new(GridLength.Star) }, ColumnSpacing = 8 };
+        warmupRow.Add(warmup); warmupRow.Add(new Label { Text = "Warm-up set", VerticalOptions = LayoutOptions.Center }, 1);
+        SemanticProperties.SetDescription(warmup, "Warm-up set");
+        gymForm.Add(warmupRow);
+        addSet.Text = "Save set"; gymForm.Add(addSet); gymForm.Add(setsView);
         kind.SelectedIndexChanged += (_, _) => { distance.IsVisible = kind.SelectedIndex == 0; gymForm.IsVisible = kind.SelectedIndex == 1; };
         gymForm.IsVisible = false;
         save.Clicked += async (_, _) => await RunAsync(SaveAsync);
-        var cancel = new Button { Text = "Cancel edit / clear form" }; cancel.Clicked += (_, _) => ResetDraft();
-        var list = new CollectionView { ItemsSource = records, HeightRequest = 360, SelectionMode = SelectionMode.None };
+        var cancel = new Button { Text = "Clear form" }; cancel.Clicked += (_, _) => ResetDraft();
+        var list = new CollectionView { ItemsSource = records, HeightRequest = 360, SelectionMode = SelectionMode.None, IsVisible = false };
+        var empty = DesignComponents.Caption("No workouts saved yet.");
+        records.CollectionChanged += (_, _) => { list.IsVisible = records.Count > 0; empty.IsVisible = records.Count == 0; };
         list.ItemTemplate = new DataTemplate(() =>
         {
             var summary = new Label(); summary.SetBinding(Label.TextProperty, nameof(WorkoutRecord.Summary));
             var detail = new Label(); detail.SetBinding(Label.TextProperty, nameof(WorkoutRecord.Details));
             var edit = new Button { Text = "Edit" }; edit.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.IsManual));
             edit.Clicked += (_, _) => { if (edit.BindingContext is WorkoutRecord record) BeginEdit(record); };
-            var delete = new Button { Text = "Delete local entry" };
+            var delete = new Button { Text = "Delete entry" };
             delete.Clicked += async (_, _) => { if (delete.BindingContext is WorkoutRecord record) await RunAsync(() => DeleteAsync(record)); };
-            return new VerticalStackLayout { Padding = 8, Children = { summary, detail, new HorizontalStackLayout { Children = { edit, delete } } } };
+            return DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = { summary, detail, new VerticalStackLayout { Spacing = 8, Children = { edit, delete } } } });
         });
-        var import = new Button { Text = "Import Health Connect sessions" };
+        var import = new Button { Text = "Import" };
         import.Clicked += async (_, _) => await RunAsync(ImportAsync);
         var importStatus = new Label();
         importStatus.SetBinding(Label.TextProperty, new Binding(nameof(Label.Text), source: status));
-        var refresh = new Button { Text = "Refresh workouts" }; refresh.Clicked += async (_, _) => await RunAsync(LoadAsync);
-        form = new VerticalStackLayout { Padding = 20, Spacing = 10, Children = {
-            new Label { Text = "Manual workout", FontSize = 24 }, date, kind, title, minutes, distance, notes, gymForm, save, cancel,
-            new Label { Text = "Workouts do not change calorie targets or meal allowance." }, status, refresh, list,
-            new Label { Text = "Health Connect import", FontSize = 24 },
+        var refresh = new Button { Text = "Refresh" }; refresh.Clicked += async (_, _) => await RunAsync(LoadAsync);
+        importHeading = new Label { Text = "Health Connect import", FontSize = 24 };
+        form = new VerticalStackLayout { Padding = 20, Spacing = 16, Children = {
+            new Label { Text = "Manual workout", FontSize = 24 }, new Label { Text = "Local workout date" }, date, new Label { Text = "Workout type" }, kind, new Label { Text = "Title" }, title, new Label { Text = "Duration (minutes)" }, minutes, distance, new Label { Text = "Notes (optional)" }, notes, gymForm, save, cancel,
+            new Label { Text = "Workouts do not change calorie targets or meal allowance." }, status, refresh, empty, list,
+            importHeading,
             new Label { Text = "Android 14+. Reads exercise sessions only after you tap Import and grant access. Select dates within the last 30 days. No routes, GPS, heart rate, distance records, calories, steps or background sync. Imported entries are read-only; repeat imports update matching source IDs without duplicating them. Deleting a local imported copy lets a later import bring it back." },
             importStatus, new Label { Text = "From" }, importFrom, new Label { Text = "Through" }, importThrough, import } };
-        Content = new ScrollView { Content = form };
+        // Group the existing controls without changing their bindings or event handlers.
+        var manual = new VerticalStackLayout { Spacing = 10 };
+        while (form.Children.Count > 0 && form.Children[0] != save)
+        {
+            var child = (View)form.Children[0]; form.Children.RemoveAt(0); manual.Add(child);
+        }
+        form.Children.Insert(0, DesignComponents.Card(manual));
+        Content = scroller = new ScrollView { Content = form };
     }
-    protected override async void OnAppearing() { base.OnAppearing(); await RunAsync(LoadAsync); }
+    protected override async void OnAppearing() { base.OnAppearing(); await RunAsync(LoadAsync); if (focusImport) { focusImport = false; await scroller.ScrollToAsync(importHeading, ScrollToPosition.Start, false); } }
     private static double Number(string? text, string label)
     {
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) || !double.IsFinite(value))
@@ -104,7 +121,7 @@ public sealed class WorkoutsPage : ContentPage
         editing = record; date.Date = record.Date.ToDateTime(TimeOnly.MinValue); kind.SelectedIndex = record.Kind == "run" ? 0 : 1;
         title.Text = record.Title; minutes.Text = (record.DurationSeconds / 60).ToString("G17", CultureInfo.CurrentCulture);
         distance.Text = record.DistanceKm?.ToString("G17", CultureInfo.CurrentCulture); notes.Text = record.Notes;
-        sets.Clear(); sets.AddRange(record.Sets); RenderSets(); save.Text = "Save workout changes";
+        sets.Clear(); sets.AddRange(record.Sets); RenderSets(); save.Text = "Save changes";
         status.Text = "Editing the selected workout.";
     }
     private void RenderSets()
@@ -117,7 +134,7 @@ public sealed class WorkoutsPage : ContentPage
             edit.Clicked += (_, _) => { editingSet = set.Id; exercise.Text = set.Exercise; reps.Text = set.Reps.ToString(CultureInfo.CurrentCulture); load.Text = set.LoadKg.ToString("G17", CultureInfo.CurrentCulture); warmup.IsChecked = set.Warmup; };
             var remove = new Button { Text = "Remove set" };
             remove.Clicked += (_, _) => { sets.Remove(set); if (editingSet == set.Id) { editingSet = null; exercise.Text = reps.Text = load.Text = ""; warmup.IsChecked = false; } RenderSets(); };
-            setsView.Add(new VerticalStackLayout { Children = { label, new HorizontalStackLayout { Children = { edit, remove } } } });
+            setsView.Add(new VerticalStackLayout { Children = { label, new VerticalStackLayout { Spacing = 8, Children = { edit, remove } } } });
         }
     }
     public void ResetDraft()

@@ -13,6 +13,18 @@ public class MainActivity : MauiAppCompatActivity
     private TaskCompletionSource<bool> resumed = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public bool IsForeground { get; private set; }
     public Task<bool> WaitUntilResumedAsync() => IsForeground ? Task.FromResult(true) : resumed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+    public override void OnWindowFocusChanged(bool hasFocus)
+    {
+        base.OnWindowFocusChanged(hasFocus);
+        if (hasFocus) UpdateStatusIcons();
+    }
+    public void UpdateStatusIcons()
+    {
+        if (Window is { } window &&
+            AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView) is { } controller)
+            controller.AppearanceLightStatusBars = Microsoft.Maui.Controls.Shell.Current?.FlyoutIsPresented == true &&
+                Microsoft.Maui.Controls.Application.Current?.RequestedTheme != Microsoft.Maui.ApplicationModel.AppTheme.Dark;
+    }
     protected override void OnResume() { base.OnResume(); IsForeground = true; resumed.TrySetResult(true); }
     protected override void OnPause()
     {

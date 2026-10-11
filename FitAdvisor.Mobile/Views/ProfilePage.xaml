@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" x:Class="FitAdvisor.Mobile.Views.ProfilePage" x:DataType="vm:ProfileViewModel" Title="Profile">
-  <ScrollView><VerticalStackLayout Padding="24" Spacing="10">
+  <ScrollView><VerticalStackLayout Padding="20" Spacing="16">
     <Label Text="Profile &amp; calorie goal" Style="{StaticResource Heading}" />
+    <Border Style="{StaticResource Card}"><VerticalStackLayout Spacing="10">
     <Label Text="Name" /><Entry Text="{Binding Name}" MaxLength="100" AutomationId="ProfileName" />
     <Label Text="Calculation weight (kg)" /><Entry Text="{Binding Weight}" Keyboard="Numeric" AutomationId="ProfileWeight" />
     <Label Text="Height (cm)" /><Entry Text="{Binding Height}" Keyboard="Numeric" AutomationId="ProfileHeight" />
@@ -13,12 +14,15 @@
     <Label Text="This multiplier includes your usual exercise. The initial value is 1.2; choose an assumption that fits your activity. No workout calories are added separately." Style="{StaticResource Caption}" />
     <Label Text="Daily goal adjustment (kcal; −1000 to +1000)" /><Entry Text="{Binding Adjustment}" Placeholder="0 for maintenance; negative for a deficit" />
     <Label Text="Target = estimated resting energy × activity multiplier + your goal adjustment. Target weight is recorded as a goal and does not set the deficit automatically. These are estimates; accepted input limits do not establish that a target is appropriate." Style="{StaticResource Caption}" />
+    </VerticalStackLayout></Border>
     <Button Text="Save profile" Command="{Binding SaveCommand}" AutomationId="SaveProfile" />
     <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
     <Label Text="{Binding Status}" AutomationId="ProfileStatus" />
     <Label Text="{Binding EstimateText}" />
+    <Border Style="{StaticResource Card}"><VerticalStackLayout Spacing="10">
     <Label Text="Recent profile &amp; goal revisions" FontAttributes="Bold" />
     <Label Text="{Binding HistoryText}" />
+    </VerticalStackLayout></Border>
     <Label Text="Age is saved as years at this revision. Update it on your birthday. Weight measurements do not change the calculation weight automatically. Earlier target snapshots and entry contexts are retained." Style="{StaticResource Caption}" />
   </VerticalStackLayout></ScrollView>
 </ContentPage>
