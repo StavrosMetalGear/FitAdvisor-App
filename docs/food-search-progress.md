@@ -1,0 +1,13 @@
+# Food-search resume audit — 2026-10-11
+
+Repository inspected at commit `2f21791`. Git was clean at the start. No food-search implementation, catalog, quantity extraction, tests, or prior progress document was present. The ignored `artifacts/usda-sr-legacy-2018-04.zip` exists; a downloaded archive is not an implemented catalog. Previous prompt requirements are unavailable in this session and have been requested from the user. No food-search changes have been made pending that scope.
+
+Implemented baseline: manual meals with entered nutrition totals, historical target snapshots, local SQLite persistence, encrypted backup/restore, workouts, Health Connect session import.
+
+Rerun and passed: calculation checks; persistence checks (separate-process reopen, CRUD, validation, day totals, revisions, future schema and migration rollback); offline checks (authenticated backup, password/tamper/truncation, Greek locale, full history roundtrip, failed-restore rollback, v1 upgrade, workouts/imports and calorie isolation). These are baseline regressions, not food-search acceptance tests. No personal diary was restored, deleted or cleared.
+
+Fresh signed Release ARM64 build passed with zero build warnings/errors. Path: `FitAdvisor.Mobile/bin/Release/net10.0-android/android-arm64/com.stavros.fitadvisor-Signed.apk`. SHA-256: `F9325ABE359A5087FA3B3E3DC2A1259E1863EEC624DA4302BE8648362120A335`. Signature verification passed v1/v2/v3 with the existing development certificate SHA-256 `182049d70b00e02274148eb20c103d49d539c37b29372aef240def3d03dfae70`; verifier reports third-party META-INF v1 coverage warnings. Build log: `artifacts/food-search-resume-release.log`. Includes current baseline source, no food-search feature.
+
+Existing API 36.1 x86_64 emulator booted with `-read-only -no-snapshot`, preserving its saved disk. Installed baseline app launched and dashboard UI was inspected. No updated emulator APK was installed in this audit; ARM64 APK is intended for the Pixel. Food search/select/gram entry/save/edit/delete/dashboard and force-stop persistence acceptance remains unperformed. Greek accented/unaccented and English searches, raw/cooked distinctions, ambiguous matches, extracted-gram confirmation, catalog portion/missing-nutrient behavior remain unperformed because the feature is absent. ARM64 runtime acceptance remains pending on the phone.
+
+Update without uninstalling: `adb -s PHONE_SERIAL install -r FitAdvisor.Mobile/bin/Release/net10.0-android/android-arm64/com.stavros.fitadvisor-Signed.apk`. Keep the existing signing identity; if Android reports a signature mismatch, stop without uninstalling or clearing storage.
