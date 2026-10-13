@@ -23,7 +23,9 @@ public sealed partial class SqlitePersonalDiary
             r.GetDouble(2), r.IsDBNull(3) ? null : r.GetString(3), OptionalId(r,4)), DateTimeOffset.Parse(r.GetString(5)), DateTimeOffset.Parse(r.GetString(6))));
         using (var cmd = Command(db, "SELECT payload FROM workouts ORDER BY rowid", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) workouts.Add(ReadJson<WorkoutRecord>(r.GetString(0)));
-        var backup = new DiaryBackup(1, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray());
+        var backup = new DiaryBackup(2, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
+            Habits = HabitRead<HabitRecord>(db, "habits", tx), HabitGoals = HabitRead<HabitGoal>(db, "habit_goals", tx),
+            HabitSettings = HabitRead<HabitSettings>(db, "habit_settings", tx).SingleOrDefault() ?? new() };
         backup.Validate(); tx.Commit(); return backup;
     });
 
@@ -34,7 +36,7 @@ public sealed partial class SqlitePersonalDiary
         {
             // Replacing all records is atomic, including IDs, timestamps and historical targets.
             using var tx = db.BeginTransaction();
-            using (var clear = Command(db, "DELETE FROM workouts; DELETE FROM meals; DELETE FROM weights; DELETE FROM daily_targets; DELETE FROM profile_revisions;", tx))
+            using (var clear = Command(db, "DELETE FROM habits; DELETE FROM habit_goals; DELETE FROM habit_settings; DELETE FROM workouts; DELETE FROM meals; DELETE FROM weights; DELETE FROM daily_targets; DELETE FROM profile_revisions;", tx))
                 clear.ExecuteNonQuery();
             foreach (var p in backup.Profiles)
             {
@@ -66,6 +68,9 @@ public sealed partial class SqlitePersonalDiary
                     ("$created", entry.CreatedAt.ToString("O")), ("$updated", entry.UpdatedAt.ToString("O"))); cmd.ExecuteNonQuery();
             }
             foreach (var w in backup.Workouts) WriteWorkout(db, w, tx);
+            foreach (var g in backup.HabitGoals) WriteGoal(db, g, tx);
+            foreach (var h in backup.Habits) WriteHabit(db, h, tx);
+            WriteSettings(db, backup.HabitSettings, tx);
             tx.Commit(); return true;
         });
     }

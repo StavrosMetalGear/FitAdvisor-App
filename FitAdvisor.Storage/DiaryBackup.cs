@@ -10,14 +10,24 @@ public sealed record BackupWeight(WeightRecord Record, DateTimeOffset CreatedAt,
 public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, ProfileRevision[] Profiles,
     DailyTargetSnapshot[] Targets, BackupMeal[] Meals, BackupWeight[] Weights, WorkoutRecord[] Workouts)
 {
+    public HabitRecord[] Habits { get; init; } = [];
+    public HabitGoal[] HabitGoals { get; init; } = [];
+    public HabitSettings HabitSettings { get; init; } = new();
     public string Summary => $"{Profiles.Length} profile revisions, {Targets.Length} daily targets, " +
-        $"{Meals.Length} meals, {Weights.Length} weights, {Workouts.Length} workouts";
+        $"{Meals.Length} meals, {Weights.Length} weights, {Workouts.Length} workouts, {Habits.Length} habit records, {HabitGoals.Length} habit goals";
     public void Validate()
     {
-        if (FormatVersion != 1 || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
+        if (FormatVersion is not (1 or 2) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
+        if (Habits == null || HabitGoals == null || HabitSettings == null) throw new ArgumentException("Incomplete habit backup.");
+        HabitSettings.Validate();
+        foreach (var goal in HabitGoals) goal.Validate();
+        foreach (var habit in Habits) habit.Validate();
+        if (HabitGoals.Select(g => g.Id).Distinct().Count() != HabitGoals.Length || Habits.Select(h => h.Id).Distinct().Count() != Habits.Length) throw new ArgumentException("Duplicate habit IDs.");
+        if (Habits.Where(h => h.Kind == "smoking").GroupBy(h => h.Date).Any(g => g.Count() > 1)) throw new ArgumentException("Duplicate smoking dates.");
+        if (Habits.Any(h => h.Kind == "eating" && !HabitGoals.Any(g => g.Id == h.GoalId && g.Kind == "eating"))) throw new ArgumentException("Broken eating goal reference.");
         if (Profiles == null || Targets == null || Meals == null || Weights == null || Workouts == null)
             throw new ArgumentException("Incomplete backup.");
-        if ((long)Profiles.Length + Targets.Length + Meals.Length + Weights.Length + Workouts.Length > 100000)
+        if ((long)Profiles.Length + Targets.Length + Meals.Length + Weights.Length + Workouts.Length + Habits.Length + HabitGoals.Length > 100000)
             throw new ArgumentException("Backup contains too many records.");
         static HashSet<Guid> Ids(IEnumerable<Guid> values)
         {

@@ -41,6 +41,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<DashboardPage>(); builder.Services.AddSingleton<ProfilePage>();
         builder.Services.AddSingleton<MealsPage>(); builder.Services.AddSingleton<WeightPage>();
         builder.Services.AddSingleton<HomePage>(); builder.Services.AddSingleton<SettingsPage>();
+        builder.Services.AddSingleton<HabitsPage>();
         builder.Services.AddSingleton<AppShell>();
 #if DEBUG
         builder.Logging.AddDebug();

@@ -75,7 +75,7 @@ try
     Sql(path, "DROP TRIGGER reject_restore;");
     // Simulate the exact v1 schema by dropping only the new workout table and resetting its version.
     var upgradePath = Path.Combine(root, "upgrade.db"); var upgrading = new SqlitePersonalDiary(upgradePath);
-    await upgrading.RestoreBackupAsync(preWorkout); Sql(upgradePath, "DROP TABLE workouts; PRAGMA user_version=1;");
+    await upgrading.RestoreBackupAsync(preWorkout); Sql(upgradePath, "DROP TABLE habits; DROP TABLE habit_goals; DROP TABLE habit_settings; DROP TABLE workouts; PRAGMA user_version=1;");
     var upgraded = await upgrading.CreateBackupAsync();
     Check(upgraded.Meals.SequenceEqual(preWorkout.Meals) && upgraded.Profiles.SequenceEqual(preWorkout.Profiles) && upgraded.Targets.SequenceEqual(preWorkout.Targets), "v1 upgrade lost diary history");
     await upgrading.SaveWorkoutAsync(gym); Check((await upgrading.GetWorkoutsAsync()).Count == 1, "v2 table missing");

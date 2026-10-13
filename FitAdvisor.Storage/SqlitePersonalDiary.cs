@@ -48,7 +48,7 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
         using var tx = db.BeginTransaction();
         using var version = Command(db, "PRAGMA user_version", tx);
         var current = Convert.ToInt32(version.ExecuteScalar(), CultureInfo.InvariantCulture);
-        if (current > 2) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
+        if (current > 3) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
         if (current == 0)
         {
             using var create = Command(db, """
@@ -86,6 +86,19 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
                 PRAGMA user_version = 2;
                 """, tx);
             workouts.ExecuteNonQuery();
+        }
+        if (current < 3)
+        {
+            using var habits = Command(db, """
+                CREATE TABLE habit_goals(id TEXT PRIMARY KEY, payload TEXT NOT NULL);
+                CREATE TABLE habits(id TEXT PRIMARY KEY, local_date TEXT NOT NULL, kind TEXT NOT NULL,
+                    goal_id TEXT REFERENCES habit_goals(id), payload TEXT NOT NULL);
+                CREATE INDEX habits_date ON habits(local_date);
+                CREATE UNIQUE INDEX smoking_day ON habits(local_date) WHERE kind='smoking';
+                CREATE TABLE habit_settings(id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL);
+                PRAGMA user_version=3;
+                """, tx);
+            habits.ExecuteNonQuery();
         }
         tx.Commit();
     }

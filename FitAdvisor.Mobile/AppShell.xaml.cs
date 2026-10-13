@@ -3,7 +3,7 @@ namespace FitAdvisor.Mobile;
 public partial class AppShell : Shell
 {
     private readonly WorkoutsPage workouts;
-    public AppShell(HomePage home, DashboardPage dashboard, ProfilePage profile, MealsPage meals, WeightPage weight, WorkoutsPage workouts, DataPage data, SettingsPage settings)
+    public AppShell(HomePage home, DashboardPage dashboard, ProfilePage profile, MealsPage meals, WeightPage weight, WorkoutsPage workouts, DataPage data, SettingsPage settings, HabitsPage habits)
     {
         InitializeComponent();
         this.workouts = workouts;
@@ -20,6 +20,7 @@ public partial class AppShell : Shell
         Add(tabs, "Home", "home", home);
         Add(tabs, "Dashboard", "today", dashboard); Add(tabs, "Profile", "profile", profile);
         Add(tabs, "Food Diary", "meals", meals); Add(tabs, "Weight", "weight", weight);
+        Add(tabs, "Habits & Recovery", "habits", habits);
         Add(tabs, "Workouts", "workouts", workouts); Add(tabs, "Backup / Restore", "data", data);
         Add(tabs, "Settings", "settings", settings); Items.Add(tabs);
         Navigating += (_, _) => FlyoutIsPresented = false;

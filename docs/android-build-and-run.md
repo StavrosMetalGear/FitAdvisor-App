@@ -1,5 +1,17 @@
 # Android build, install and verification
 
+## Repository move — 2026-10-13
+
+Current checkout: `D:\repos\FitAdvisor`. Android SDK: `D:\Android\Sdk`; AVDs: `D:\Android\avd`. Historical `C:\Users\stavr\source\repos\FitAdvisor` paths below describe old artifacts. Run builds from the current repository and use relative APK paths. After copying a checkout with `bin`/`obj`, use `dotnet build ... -t:Rebuild` to regenerate package intermediates. Do not move or clear the phone's app-private database to fix build paths.
+
+The Habits & Recovery increment is documented in [habits-and-recovery.md](habits-and-recovery.md), including backup compatibility and current verification. Update in place with the same certificate:
+
+```powershell
+& 'D:/Android/Sdk/platform-tools/adb.exe' -s PHONE_SERIAL install -r 'D:/repos/FitAdvisor/artifacts/FitAdvisor-habits-arm64.apk'
+```
+
+If signatures differ, stop; do not uninstall or clear storage.
+
 FitAdvisor.Mobile targets Android first (net10.0-android, minimum Android 6 / API 23). It is a separate MAUI app; FitAdvisor.csproj remains the web application. iOS is deferred. The app requires no account, server, health permissions, location or network connection for its profile, diary or weight flows.
 
 ## Requirements
