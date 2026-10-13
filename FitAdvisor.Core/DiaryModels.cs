@@ -16,10 +16,11 @@ public sealed record ProfileDraft(string Name, double WeightKg, double HeightCm,
 public sealed record ProfileRevision(Guid Id, DateOnly EffectiveDate, DateTimeOffset CreatedAt, ProfileDraft Values);
 public sealed record MealRecord(Guid Id, DateOnly Date, string Name, double Quantity, string Unit,
     double CaloriesKcal, double? ProteinG = null, double? CarbohydratesG = null, double? FatG = null,
-    Guid? ProfileRevisionId = null)
+    Guid? ProfileRevisionId = null, FoodNutritionSnapshot? NutritionSnapshot = null)
 {
     public string Summary => $"{Date:yyyy-MM-dd} · {Name}: {Quantity:g} {Unit} · {CaloriesKcal:g} kcal";
     public string Macros => $"Protein {Show(ProteinG)}, carbs {Show(CarbohydratesG)}, fat {Show(FatG)} (totals)";
+    public string FoodSource => NutritionSnapshot?.Attribution ?? "Manually entered nutrition totals";
     private static string Show(double? value) => value is { } n ? $"{n:g} g" : "unknown";
     public void Validate()
     {
@@ -30,6 +31,13 @@ public sealed record MealRecord(Guid Id, DateOnly Date, string Name, double Quan
         DiaryValidation.Number(CaloriesKcal, 0, 50000, nameof(CaloriesKcal));
         foreach (var macro in new[] { ProteinG, CarbohydratesG, FatG })
             if (macro is { } value) DiaryValidation.Number(value, 0, 10000, "Macros");
+        if (NutritionSnapshot is { } snapshot)
+        {
+            snapshot.Validate();
+            if (Name != snapshot.Description || Unit != "g" || Quantity != snapshot.Grams ||
+                CaloriesKcal != snapshot.Calories || ProteinG != snapshot.Protein || CarbohydratesG != snapshot.Carbs || FatG != snapshot.Fat)
+                throw new ArgumentException("Meal totals must match the saved food nutrition snapshot.");
+        }
     }
 }
 public sealed record WeightRecord(Guid Id, DateOnly Date, double WeightKg, string? Notes = null, Guid? ProfileRevisionId = null)

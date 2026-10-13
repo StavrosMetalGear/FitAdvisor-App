@@ -48,7 +48,7 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
         using var tx = db.BeginTransaction();
         using var version = Command(db, "PRAGMA user_version", tx);
         var current = Convert.ToInt32(version.ExecuteScalar(), CultureInfo.InvariantCulture);
-        if (current > 3) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
+        if (current > 4) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
         if (current == 0)
         {
             using var create = Command(db, """
@@ -99,6 +99,11 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
                 PRAGMA user_version=3;
                 """, tx);
             habits.ExecuteNonQuery();
+        }
+        if (current < 4)
+        {
+            using var food = Command(db, "ALTER TABLE meals ADD COLUMN nutrition_snapshot TEXT; PRAGMA user_version=4;", tx);
+            food.ExecuteNonQuery();
         }
         tx.Commit();
     }
@@ -170,11 +175,11 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
         DiaryValidation.Date(date);
         return Execute<IReadOnlyList<MealRecord>>(db =>
         {
-            using var command = Command(db, "SELECT id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id FROM meals WHERE local_date=$date ORDER BY created_at,id",
+            using var command = Command(db, "SELECT id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,nutrition_snapshot FROM meals WHERE local_date=$date ORDER BY created_at,id",
                 null, ("$date", Day(date)));
             using var reader = command.ExecuteReader(); var list = new List<MealRecord>();
             while (reader.Read()) list.Add(new(Guid.Parse(reader.GetString(0)), DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.GetString(2), reader.GetDouble(3), reader.GetString(4), reader.GetDouble(5), OptionalNumber(reader, 6), OptionalNumber(reader, 7), OptionalNumber(reader, 8), OptionalId(reader, 9)));
+                reader.GetString(2), reader.GetDouble(3), reader.GetString(4), reader.GetDouble(5), OptionalNumber(reader, 6), OptionalNumber(reader, 7), OptionalNumber(reader, 8), OptionalId(reader, 9), reader.IsDBNull(10) ? null : ReadJson<FoodNutritionSnapshot>(reader.GetString(10))));
             return list;
         });
     }
@@ -188,14 +193,14 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
             using var tx = db.BeginTransaction(); var profileId = EntryProfile(db, "meals", meal.Id, meal.Date, tx);
             var now = DateTimeOffset.UtcNow.ToString("O");
             using var command = Command(db, """
-                INSERT INTO meals(id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,created_at,updated_at)
-                VALUES($id,$date,$name,$quantity,$unit,$kcal,$protein,$carbs,$fat,$profile,$now,$now)
+                INSERT INTO meals(id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,created_at,updated_at,nutrition_snapshot)
+                VALUES($id,$date,$name,$quantity,$unit,$kcal,$protein,$carbs,$fat,$profile,$now,$now,$snapshot)
                 ON CONFLICT(id) DO UPDATE SET local_date=excluded.local_date,name=excluded.name,quantity=excluded.quantity,
                 unit=excluded.unit,kcal=excluded.kcal,protein_g=excluded.protein_g,carbs_g=excluded.carbs_g,
-                fat_g=excluded.fat_g,profile_id=excluded.profile_id,updated_at=excluded.updated_at
+                fat_g=excluded.fat_g,profile_id=excluded.profile_id,updated_at=excluded.updated_at,nutrition_snapshot=excluded.nutrition_snapshot
                 """, tx, ("$id", meal.Id.ToString()), ("$date", Day(meal.Date)), ("$name", meal.Name.Trim()),
                 ("$quantity", meal.Quantity), ("$unit", meal.Unit.Trim()), ("$kcal", meal.CaloriesKcal),
-                ("$protein", meal.ProteinG), ("$carbs", meal.CarbohydratesG), ("$fat", meal.FatG), ("$profile", profileId?.ToString()), ("$now", now));
+                ("$protein", meal.ProteinG), ("$carbs", meal.CarbohydratesG), ("$fat", meal.FatG), ("$profile", profileId?.ToString()), ("$now", now), ("$snapshot", meal.NutritionSnapshot == null ? null : Json(meal.NutritionSnapshot)));
             command.ExecuteNonQuery(); tx.Commit(); return true;
         });
     }

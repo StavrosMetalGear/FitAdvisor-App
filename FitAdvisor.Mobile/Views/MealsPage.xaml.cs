@@ -1,4 +1,5 @@
 using FitAdvisor.Mobile.ViewModels;
+using FitAdvisor.Core;
 namespace FitAdvisor.Mobile.Views;
 public partial class MealsPage : ContentPage
 {
@@ -6,5 +7,11 @@ public partial class MealsPage : ContentPage
     public MealsViewModel Model => model;
     public MealsPage(MealsViewModel model) { InitializeComponent(); this.model = model; BindingContext = model; }
     protected override async void OnAppearing() { base.OnAppearing(); await model.Guard(model.LoadAsync); }
-    private async void EditClicked(object? sender, EventArgs e) => await Scroller.ScrollToAsync(0, 0, true);
+    private async void CatalogueClicked(object? sender, EventArgs e) => await Navigation.PushAsync(new FoodCataloguePage(model.Diary, DateOnly.FromDateTime(model.Date)));
+    private async void EditClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: MealRecord { NutritionSnapshot: not null } meal })
+            await Navigation.PushAsync(new FoodCataloguePage(model.Diary, meal.Date, meal));
+        else await Scroller.ScrollToAsync(0, 0, true);
+    }
 }

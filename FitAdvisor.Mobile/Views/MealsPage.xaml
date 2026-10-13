@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" xmlns:views="clr-namespace:FitAdvisor.Mobile.Views" xmlns:core="clr-namespace:FitAdvisor.Core;assembly=FitAdvisor.Core" x:Class="FitAdvisor.Mobile.Views.MealsPage" x:Name="PageRoot" x:DataType="vm:MealsViewModel" Title="Meals">
   <ScrollView x:Name="Scroller"><VerticalStackLayout Padding="20" Spacing="16">
     <Label Text="Meal diary" Style="{StaticResource Heading}" />
+    <Button Text="Search offline food catalogue" Clicked="CatalogueClicked" AutomationId="OpenFoodCatalogue" />
     <Border Style="{StaticResource Card}"><VerticalStackLayout Spacing="10">
     <Label Text="Local diary date" /><DatePicker Date="{Binding Date}" Format="yyyy-MM-dd" />
     <Button Text="Show meals" Command="{Binding LoadCommand}" />
@@ -23,6 +24,7 @@
       <BindableLayout.ItemTemplate><DataTemplate x:DataType="core:MealRecord">
         <Border Style="{StaticResource Card}"><VerticalStackLayout Spacing="8">
           <Label Text="{Binding Summary}" /><Label Text="{Binding Macros}" Style="{StaticResource Caption}" />
+          <Label Text="{Binding FoodSource}" Style="{StaticResource Caption}" />
           <VerticalStackLayout Spacing="8">
             <Button Text="Edit" Clicked="EditClicked" Command="{Binding Model.EditCommand, Source={x:Reference PageRoot}, x:DataType=views:MealsPage}" CommandParameter="{Binding .}" />
             <Button Text="Delete" Command="{Binding Model.DeleteCommand, Source={x:Reference PageRoot}, x:DataType=views:MealsPage}" CommandParameter="{Binding .}" />

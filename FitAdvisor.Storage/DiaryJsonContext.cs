@@ -8,4 +8,5 @@ namespace FitAdvisor.Storage;
 [JsonSerializable(typeof(HabitRecord))]
 [JsonSerializable(typeof(HabitGoal))]
 [JsonSerializable(typeof(HabitSettings))]
+[JsonSerializable(typeof(FoodNutritionSnapshot))]
 internal partial class DiaryJsonContext : JsonSerializerContext { }

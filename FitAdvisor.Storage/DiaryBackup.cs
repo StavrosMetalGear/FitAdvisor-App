@@ -17,7 +17,7 @@ public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, P
         $"{Meals.Length} meals, {Weights.Length} weights, {Workouts.Length} workouts, {Habits.Length} habit records, {HabitGoals.Length} habit goals";
     public void Validate()
     {
-        if (FormatVersion is not (1 or 2) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
+        if (FormatVersion is not (1 or 2 or 3) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
         if (Habits == null || HabitGoals == null || HabitSettings == null) throw new ArgumentException("Incomplete habit backup.");
         HabitSettings.Validate();
         foreach (var goal in HabitGoals) goal.Validate();

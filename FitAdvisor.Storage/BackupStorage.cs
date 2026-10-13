@@ -14,16 +14,16 @@ public sealed partial class SqlitePersonalDiary
         using (var r = cmd.ExecuteReader()) while (r.Read()) profiles.Add(ReadJson<ProfileRevision>(r.GetString(0)));
         using (var cmd = Command(db, "SELECT payload FROM daily_targets ORDER BY local_date", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) targets.Add(ReadJson<DailyTargetSnapshot>(r.GetString(0)));
-        using (var cmd = Command(db, "SELECT id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,created_at,updated_at FROM meals ORDER BY rowid", tx))
+        using (var cmd = Command(db, "SELECT id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,created_at,updated_at,nutrition_snapshot FROM meals ORDER BY rowid", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) meals.Add(new(new(Guid.Parse(r.GetString(0)), DateOnly.Parse(r.GetString(1)),
-            r.GetString(2), r.GetDouble(3), r.GetString(4), r.GetDouble(5), OptionalNumber(r,6), OptionalNumber(r,7), OptionalNumber(r,8), OptionalId(r,9)),
+            r.GetString(2), r.GetDouble(3), r.GetString(4), r.GetDouble(5), OptionalNumber(r,6), OptionalNumber(r,7), OptionalNumber(r,8), OptionalId(r,9), r.IsDBNull(12) ? null : ReadJson<FoodNutritionSnapshot>(r.GetString(12))),
             DateTimeOffset.Parse(r.GetString(10)), DateTimeOffset.Parse(r.GetString(11))));
         using (var cmd = Command(db, "SELECT id,local_date,weight_kg,notes,profile_id,created_at,updated_at FROM weights ORDER BY rowid", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) weights.Add(new(new(Guid.Parse(r.GetString(0)), DateOnly.Parse(r.GetString(1)),
             r.GetDouble(2), r.IsDBNull(3) ? null : r.GetString(3), OptionalId(r,4)), DateTimeOffset.Parse(r.GetString(5)), DateTimeOffset.Parse(r.GetString(6))));
         using (var cmd = Command(db, "SELECT payload FROM workouts ORDER BY rowid", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) workouts.Add(ReadJson<WorkoutRecord>(r.GetString(0)));
-        var backup = new DiaryBackup(2, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
+        var backup = new DiaryBackup(3, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
             Habits = HabitRead<HabitRecord>(db, "habits", tx), HabitGoals = HabitRead<HabitGoal>(db, "habit_goals", tx),
             HabitSettings = HabitRead<HabitSettings>(db, "habit_settings", tx).SingleOrDefault() ?? new() };
         backup.Validate(); tx.Commit(); return backup;
@@ -53,11 +53,11 @@ public sealed partial class SqlitePersonalDiary
             {
                 var m = entry.Record;
                 using var cmd = Command(db, """
-                    INSERT INTO meals(id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,created_at,updated_at)
-                    VALUES($id,$date,$name,$quantity,$unit,$kcal,$protein,$carbs,$fat,$profile,$created,$updated)
+                    INSERT INTO meals(id,local_date,name,quantity,unit,kcal,protein_g,carbs_g,fat_g,profile_id,created_at,updated_at,nutrition_snapshot)
+                    VALUES($id,$date,$name,$quantity,$unit,$kcal,$protein,$carbs,$fat,$profile,$created,$updated,$snapshot)
                     """, tx, ("$id", m.Id.ToString()), ("$date", Day(m.Date)), ("$name", m.Name), ("$quantity", m.Quantity),
                     ("$unit", m.Unit), ("$kcal", m.CaloriesKcal), ("$protein", m.ProteinG), ("$carbs", m.CarbohydratesG),
-                    ("$fat", m.FatG), ("$profile", m.ProfileRevisionId?.ToString()), ("$created", entry.CreatedAt.ToString("O")), ("$updated", entry.UpdatedAt.ToString("O")));
+                    ("$fat", m.FatG), ("$profile", m.ProfileRevisionId?.ToString()), ("$created", entry.CreatedAt.ToString("O")), ("$updated", entry.UpdatedAt.ToString("O")), ("$snapshot", m.NutritionSnapshot == null ? null : Json(m.NutritionSnapshot)));
                 cmd.ExecuteNonQuery();
             }
             foreach (var entry in backup.Weights)

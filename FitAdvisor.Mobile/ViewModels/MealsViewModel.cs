@@ -4,6 +4,7 @@ namespace FitAdvisor.Mobile.ViewModels;
 public sealed class MealsViewModel : ViewModelBase
 {
     private readonly IPersonalDiary diary;
+    public IPersonalDiary Diary => diary;
     private readonly IUserDialogs dialogs;
     private Guid? editing;
     private DateTime date = DateTime.Today;
@@ -40,6 +41,7 @@ public sealed class MealsViewModel : ViewModelBase
     }
     private Task EditAsync(MealRecord meal)
     {
+        if (meal.NutritionSnapshot != null) return Task.CompletedTask;
         editing = meal.Id; Date = meal.Date.ToDateTime(TimeOnly.MinValue); Name = meal.Name; Quantity = Display(meal.Quantity); Unit = meal.Unit;
         Calories = Display(meal.CaloriesKcal); Protein = meal.ProteinG is { } p ? Display(p) : "";
         Carbs = meal.CarbohydratesG is { } c ? Display(c) : ""; Fat = meal.FatG is { } f ? Display(f) : "";
