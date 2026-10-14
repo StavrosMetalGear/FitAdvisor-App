@@ -3,5 +3,6 @@
   <!-- The Android Debug build otherwise adds INTERNET for debugger support. -->
   <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
   <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+  <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
   <application android:allowBackup="false" android:debuggable="false" android:usesCleartextTraffic="false" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" />
 </manifest>

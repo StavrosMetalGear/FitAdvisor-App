@@ -44,12 +44,12 @@ public class MainActivity : MauiAppCompatActivity
         catch { documentResult = null; throw; }
         return task;
     }
-    public Task<bool> RequestExerciseReadAsync()
+    public Task<bool> RequestExerciseReadAsync(string permission = Services.AndroidHealthSessionReader.ReadPermission)
     {
         if (healthPermissionResult != null) throw new InvalidOperationException("A permission request is already open.");
         healthPermissionResult = new(TaskCreationOptions.RunContinuationsAsynchronously);
         var task = healthPermissionResult.Task;
-        try { RequestPermissions(new[] { Services.AndroidHealthSessionReader.ReadPermission }, 902); }
+        try { RequestPermissions(new[] { permission }, 902); }
         catch { healthPermissionResult = null; throw; }
         return task;
     }

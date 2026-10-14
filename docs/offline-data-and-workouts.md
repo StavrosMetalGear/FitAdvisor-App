@@ -1,5 +1,7 @@
 # Local backup, workouts and Health Connect
 
+Current behavior and APK: [0.4.2 diagnostics, history access, planned workouts and phone test](health-connect-diagnostics-and-plans.md). The rolling last-30-days instructions and Exercise-only manifest descriptions below document the earlier version; 0.4.2 removes that date restriction and adds optional older-history permission.
+
 This increment retains the privacy audit's offline protections: INTERNET is explicitly removed, cleartext traffic and Android debugging are disabled, automatic Android backup stays disabled, and there is no analytics, advertising, remote crash reporting or app cloud-upload service. The only new Android platform permission is `android.permission.health.READ_EXERCISE`.
 
 ## Backup and restore

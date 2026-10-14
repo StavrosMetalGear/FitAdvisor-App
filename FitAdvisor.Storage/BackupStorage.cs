@@ -23,7 +23,7 @@ public sealed partial class SqlitePersonalDiary
             r.GetDouble(2), r.IsDBNull(3) ? null : r.GetString(3), OptionalId(r,4)), DateTimeOffset.Parse(r.GetString(5)), DateTimeOffset.Parse(r.GetString(6))));
         using (var cmd = Command(db, "SELECT payload FROM workouts ORDER BY rowid", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) workouts.Add(ReadJson<WorkoutRecord>(r.GetString(0)));
-        var backup = new DiaryBackup(3, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
+        var backup = new DiaryBackup(4, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
             Habits = HabitRead<HabitRecord>(db, "habits", tx), HabitGoals = HabitRead<HabitGoal>(db, "habit_goals", tx),
             HabitSettings = HabitRead<HabitSettings>(db, "habit_settings", tx).SingleOrDefault() ?? new() };
         backup.Validate(); tx.Commit(); return backup;

@@ -28,6 +28,8 @@ public sealed partial class SqlitePersonalDiary
     {
         record.Validate();
         if (!record.IsManual) throw new ArgumentException("Imported sessions are read-only. Edit them in the source app.");
+        if (record.IsCompleted && record.Date > DateOnly.FromDateTime(DateTime.Today))
+            throw new ArgumentException("Future manual workouts must have Planned status.");
         return Execute(db =>
         {
             using var tx = db.BeginTransaction();

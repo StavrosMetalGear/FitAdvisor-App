@@ -9,5 +9,6 @@ public interface IBackupDocuments
 }
 public interface IHealthSessionReader
 {
-    Task<IReadOnlyList<WorkoutRecord>> ReadAsync(DateOnly from, DateOnly through);
+    Task<HealthSessionReadResult> ReadAsync(DateOnly from, DateOnly through, bool requestHistory = false);
 }
+public sealed record HealthSessionReadResult(IReadOnlyList<WorkoutRecord> Sessions, string Diagnostics);

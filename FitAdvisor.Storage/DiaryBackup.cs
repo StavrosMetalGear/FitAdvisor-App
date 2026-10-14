@@ -14,10 +14,10 @@ public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, P
     public HabitGoal[] HabitGoals { get; init; } = [];
     public HabitSettings HabitSettings { get; init; } = new();
     public string Summary => $"{Profiles.Length} profile revisions, {Targets.Length} daily targets, " +
-        $"{Meals.Length} meals, {Weights.Length} weights, {Workouts.Length} workouts, {Habits.Length} habit records, {HabitGoals.Length} habit goals";
+        $"{Meals.Length} meals, {Weights.Length} weights, {Workouts.Count(w => w.IsCompleted)} completed workouts, {Workouts.Count(w => w.IsPlanned)} planned workouts, {Habits.Length} habit records, {HabitGoals.Length} habit goals";
     public void Validate()
     {
-        if (FormatVersion is not (1 or 2 or 3) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
+        if (FormatVersion is not (1 or 2 or 3 or 4) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
         if (Habits == null || HabitGoals == null || HabitSettings == null) throw new ArgumentException("Incomplete habit backup.");
         HabitSettings.Validate();
         foreach (var goal in HabitGoals) goal.Validate();
@@ -56,6 +56,7 @@ public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, P
         foreach (var w in Workouts)
         {
             w.Validate();
+            if (FormatVersion < 4 && w.IsPlanned) throw new ArgumentException("Planned workouts require backup format 4.");
             if (!w.IsManual && !imports.Add((w.SourcePackage, w.ExternalId))) throw new ArgumentException("Duplicate imported sessions.");
         }
     }

@@ -9,8 +9,9 @@ public sealed class WorkoutsPage : ContentPage
 {
     private readonly IWorkoutDiary diary;
     private readonly IHealthSessionReader health;
-    private readonly DatePicker date = new() { Date = DateTime.Today };
-    private readonly Picker kind = new() { Title = "Workout type", ItemsSource = new[] { "Run", "Gym" }, SelectedIndex = 0 };
+    private readonly DatePicker date = new() { Date = DateTime.Today, MaximumDate = new DateTime(2100, 12, 31) };
+    private readonly Picker kind = new() { Title = "Workout type", ItemsSource = new[] { "Run", "Gym", "Other activity" }, SelectedIndex = 0 };
+    private readonly Picker workoutStatus = new() { Title = "Workout status", ItemsSource = new[] { "Completed", "Planned" }, SelectedIndex = 0 };
     private readonly Entry title = new() { Placeholder = "Workout title" };
     private readonly Entry minutes = new() { Placeholder = "Duration in minutes", Keyboard = Keyboard.Numeric };
     private readonly Entry distance = new() { Placeholder = "Run distance (km)", Keyboard = Keyboard.Numeric };
@@ -23,8 +24,10 @@ public sealed class WorkoutsPage : ContentPage
     private readonly VerticalStackLayout gymForm = new() { Spacing = 8 };
     private readonly ObservableCollection<WorkoutRecord> records = new();
     private readonly List<StrengthSet> sets = new();
-    private readonly DatePicker importFrom = new() { Date = DateTime.Today.AddDays(-6) };
-    private readonly DatePicker importThrough = new() { Date = DateTime.Today };
+    private readonly DatePicker importFrom = new() { Date = DateTime.Today.AddDays(-6), MaximumDate = DateTime.Today };
+    private readonly DatePicker importThrough = new() { Date = DateTime.Today, MaximumDate = DateTime.Today };
+    private readonly Label completedTotals = new();
+    private readonly CheckBox importHistory = new();
     private readonly Label status = new();
     private readonly Button save = new() { Text = "Add workout" };
     private readonly VerticalStackLayout form;
@@ -38,6 +41,7 @@ public sealed class WorkoutsPage : ContentPage
     public WorkoutsPage(IWorkoutDiary diary, IHealthSessionReader health)
     {
         this.diary = diary; this.health = health; Title = "Workouts";
+        date.DateSelected += (_, _) => { if (date.Date > DateTime.Today) workoutStatus.SelectedIndex = 1; };
         var addSet = new Button { Text = "Add strength set" };
         addSet.Clicked += (_, _) => {
             try
@@ -72,8 +76,10 @@ public sealed class WorkoutsPage : ContentPage
             var edit = new Button { Text = "Edit" }; edit.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.IsManual));
             edit.Clicked += (_, _) => { if (edit.BindingContext is WorkoutRecord record) BeginEdit(record); };
             var delete = new Button { Text = "Delete entry" };
+            var complete = new Button { Text = "Mark completed" }; complete.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.IsPlanned));
+            complete.Clicked += async (_, _) => { if (complete.BindingContext is WorkoutRecord record) await RunAsync(() => CompleteAsync(record)); };
             delete.Clicked += async (_, _) => { if (delete.BindingContext is WorkoutRecord record) await RunAsync(() => DeleteAsync(record)); };
-            return DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = { summary, detail, new VerticalStackLayout { Spacing = 8, Children = { edit, delete } } } });
+            return DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = { summary, detail, new VerticalStackLayout { Spacing = 8, Children = { edit, complete, delete } } } });
         });
         var import = new Button { Text = "Import" };
         import.Clicked += async (_, _) => await RunAsync(ImportAsync);
@@ -82,11 +88,13 @@ public sealed class WorkoutsPage : ContentPage
         var refresh = new Button { Text = "Refresh" }; refresh.Clicked += async (_, _) => await RunAsync(LoadAsync);
         importHeading = new Label { Text = "Health Connect import", FontSize = 24 };
         form = new VerticalStackLayout { Padding = 20, Spacing = 16, Children = {
-            new Label { Text = "Manual workout", FontSize = 24 }, new Label { Text = "Local workout date" }, date, new Label { Text = "Workout type" }, kind, new Label { Text = "Title" }, title, new Label { Text = "Duration (minutes)" }, minutes, distance, new Label { Text = "Notes (optional)" }, notes, gymForm, save, cancel,
-            new Label { Text = "Workouts do not change calorie targets or meal allowance." }, status, refresh, empty, list,
+            new Label { Text = "Manual workout", FontSize = 24 }, new Label { Text = "Local workout date (future dates are Planned)" }, date, new Label { Text = "Status" }, workoutStatus, new Label { Text = "Workout type" }, kind, new Label { Text = "Activity / title" }, title, new Label { Text = "Duration (minutes; planned for a Planned workout)" }, minutes, distance, new Label { Text = "Notes (optional)" }, notes, gymForm, save, cancel,
+            new Label { Text = "Workouts do not change calorie targets or meal allowance. Planned workouts are excluded from completed totals; mark them completed with the actual date and duration after exercising." }, completedTotals, status, refresh, empty, list,
             importHeading,
-            new Label { Text = "Android 14+. Reads exercise sessions only after you tap Import and grant access. Select dates within the last 30 days. No routes, GPS, heart rate, distance records, calories, steps or background sync. Imported entries are read-only; repeat imports update matching source IDs without duplicating them. Deleting a local imported copy lets a later import bring it back." },
-            importStatus, new Label { Text = "From" }, importFrom, new Label { Text = "Through" }, importThrough, import } };
+            new Label { Text = "Android 14+. Imports Exercise sessions exported to Health Connect. Confirm the workout under Health Connect → Data and access → Activity → Exercise and check its source first. Active calories or steps alone are insufficient. From/Through include both dates in the phone's current time zone. Standard history starts 30 days before the first permission grant, not a rolling last 30 days. Optional older-history access requires a supported Health Connect version and your approval; denial falls back to standard access. No steps or calories become workouts. Repeat imports match source IDs without duplicating them." },
+            new Label { Text = "Optionally request older exercise history when importing" }, importHistory,
+            importStatus, new Label { Text = "Import dates must be today or earlier: Health Connect imports recorded Exercise sessions, not future plans." }, new Label { Text = "From" }, importFrom, new Label { Text = "Through (inclusive)" }, importThrough, import } };
+        SemanticProperties.SetDescription(importHistory, "Request optional older exercise history permission when importing");
         // Group the existing controls without changing their bindings or event handlers.
         var manual = new VerticalStackLayout { Spacing = 10 };
         while (form.Children.Count > 0 && form.Children[0] != save)
@@ -113,12 +121,18 @@ public sealed class WorkoutsPage : ContentPage
         finally { busy = false; form.IsEnabled = true; }
     }
     private async Task LoadAsync()
-    { var items = await diary.GetWorkoutsAsync(); records.Clear(); foreach (var item in items) records.Add(item); }
+    {
+        var items = await diary.GetWorkoutsAsync(); records.Clear();
+        foreach (var item in items.OrderBy(w => w.IsPlanned ? 0 : 1).ThenByDescending(w => w.Date)) records.Add(item);
+        var totals = WorkoutTotals.Completed(items);
+        completedTotals.Text = $"Completed only: {totals.Count} workouts · {totals.DurationSeconds / 60:g} min. Planned: {items.Count(w => w.IsPlanned)} (excluded).";
+    }
     private void BeginEdit(WorkoutRecord record)
     {
         if (!record.IsManual) return;
         editingSet = null; exercise.Text = reps.Text = load.Text = ""; warmup.IsChecked = false;
-        editing = record; date.Date = record.Date.ToDateTime(TimeOnly.MinValue); kind.SelectedIndex = record.Kind == "run" ? 0 : 1;
+        editing = record; date.Date = record.Date.ToDateTime(TimeOnly.MinValue); kind.SelectedIndex = record.Kind == "run" ? 0 : record.Kind == "gym" ? 1 : 2;
+        workoutStatus.SelectedIndex = record.IsPlanned ? 1 : 0;
         title.Text = record.Title; minutes.Text = (record.DurationSeconds / 60).ToString("G17", CultureInfo.CurrentCulture);
         distance.Text = record.DistanceKm?.ToString("G17", CultureInfo.CurrentCulture); notes.Text = record.Notes;
         sets.Clear(); sets.AddRange(record.Sets); RenderSets(); save.Text = "Save changes";
@@ -140,6 +154,7 @@ public sealed class WorkoutsPage : ContentPage
     public void ResetDraft()
     {
         editing = null; editingSet = null; title.Text = minutes.Text = distance.Text = notes.Text = exercise.Text = reps.Text = load.Text = "";
+        date.Date = DateTime.Today; workoutStatus.SelectedIndex = 0;
         warmup.IsChecked = false; sets.Clear(); RenderSets(); save.Text = "Add workout"; status.Text = ""; records.Clear();
     }
     private async Task SaveAsync()
@@ -151,11 +166,34 @@ public sealed class WorkoutsPage : ContentPage
         var selectedDay = DateOnly.FromDateTime(selectedDate);
         var offset = editing?.Date == selectedDay ? editing.UtcOffsetMinutes : (int)TimeZoneInfo.Local.GetUtcOffset(selectedDate).TotalMinutes;
         var run = kind.SelectedIndex == 0;
+        var planned = workoutStatus.SelectedIndex == 1;
+        if (!planned && selectedDay > DateOnly.FromDateTime(DateTime.Today)) throw new ArgumentException("Choose Planned status for a future workout.");
+        if (editing?.IsPlanned == true && !planned)
+            throw new ArgumentException("Use Mark completed on the saved plan to confirm the actual date and duration.");
         var record = new WorkoutRecord(editing?.Id ?? Guid.NewGuid(), DateOnly.FromDateTime(selectedDate), offset,
-            run ? "run" : "gym", title.Text?.Trim() ?? "", Number(minutes.Text, "duration") * 60,
-            run ? Number(distance.Text, "distance") : null, notes.Text, run ? Array.Empty<StrengthSet>() : sets.ToArray(),
-            editing?.CreatedAt ?? now, now);
-        await diary.SaveWorkoutAsync(record); ResetDraft(); await LoadAsync(); status.Text = "Workout saved locally.";
+            run ? "run" : kind.SelectedIndex == 1 ? "gym" : "other", title.Text?.Trim() ?? "", Number(minutes.Text, "duration") * 60,
+            run && !string.IsNullOrWhiteSpace(distance.Text) ? Number(distance.Text, "distance") : null, notes.Text, kind.SelectedIndex == 1 ? sets.ToArray() : Array.Empty<StrengthSet>(),
+            editing?.CreatedAt ?? now, now) { Status = planned ? "planned" : "completed" };
+        await diary.SaveWorkoutAsync(record); ResetDraft(); await LoadAsync(); status.Text = planned ? "Planned workout saved locally." : "Completed workout saved locally.";
+    }
+    private async Task CompleteAsync(WorkoutRecord record)
+    {
+        var actualDayText = await DisplayPromptAsync("Actual workout date", "Enter the date you exercised (yyyy-MM-dd), today or earlier.", initialValue: DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        if (actualDayText == null) return;
+        if (!DateOnly.TryParseExact(actualDayText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var actualDay)) throw new ArgumentException("Enter the actual date as yyyy-MM-dd.");
+        var actualMinutes = await DisplayPromptAsync("Actual duration", "Enter the minutes you actually exercised, not the planned duration.", keyboard: Keyboard.Numeric);
+        if (actualMinutes == null) return;
+        double? actualKm = null;
+        if (record.Kind == "run")
+        {
+            var km = await DisplayPromptAsync("Actual run distance", "Enter the distance actually run in km.", keyboard: Keyboard.Numeric);
+            if (km == null) return;
+            actualKm = Number(km, "actual distance");
+        }
+        var completed = record.Complete(actualDay, Number(actualMinutes, "actual duration") * 60, actualKm, DateOnly.FromDateTime(DateTime.Today))
+            with { UtcOffsetMinutes = (int)TimeZoneInfo.Local.GetUtcOffset(actualDay.ToDateTime(TimeOnly.MinValue)).TotalMinutes };
+        if (!await DisplayAlertAsync("Confirm completed workout", $"{completed.Summary}\nReplace this plan with the confirmed actual workout?", "Mark completed", "Cancel")) return;
+        await diary.SaveWorkoutAsync(completed); if (editing?.Id == record.Id) ResetDraft(); await LoadAsync(); status.Text = "Workout marked Completed with the actual date and duration.";
     }
     private async Task DeleteAsync(WorkoutRecord record)
     {
@@ -166,10 +204,11 @@ public sealed class WorkoutsPage : ContentPage
     {
         var from = DateOnly.FromDateTime(importFrom.Date ?? DateTime.Today);
         var through = DateOnly.FromDateTime(importThrough.Date ?? DateTime.Today);
-        var items = await health.ReadAsync(from, through);
-        if (items.Count == 0) { status.Text = "No readable sessions in the selected dates. Check Health Connect access and source-app data."; return; }
-        if (!await DisplayAlertAsync("Import exercise sessions?", $"Read {items.Count} sessions. Save or update local copies? This does not change Health Connect or calorie targets.", "Import", "Cancel"))
+        var result = await health.ReadAsync(from, through, importHistory.IsChecked);
+        var items = result.Sessions;
+        if (items.Count == 0) { status.Text = result.Diagnostics; return; }
+        if (!await DisplayAlertAsync("Import exercise sessions?", $"{result.Diagnostics}\n\nSave or update local copies? This does not change Health Connect or calorie targets.", "Import", "Cancel"))
         { status.Text = "Import cancelled. No local data changed."; return; }
-        var count = await diary.ImportWorkoutsAsync(items); await LoadAsync(); status.Text = $"Imported or updated {count} sessions; matching unchanged sessions were skipped.";
+        var count = await diary.ImportWorkoutsAsync(items); await LoadAsync(); status.Text = $"Imported or updated {count} sessions; matching unchanged sessions were skipped. {result.Diagnostics}";
     }
 }

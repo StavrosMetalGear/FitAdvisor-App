@@ -19,6 +19,7 @@ public sealed class HealthPrivacyActivity : Activity
         content.AddView(new TextView(this) { Text = "FitAdvisor privacy", TextSize = 24 });
         content.AddView(new TextView(this) { Text =
             "FitAdvisor reads exercise sessions only when you tap Import and grant Health Connect read access. " +
+            "If you select the optional older-history request, supported devices can also ask for access before the standard first-grant history cutoff. Denying it keeps standard exercise access. This does not grant access to other health record types. " +
             "It saves session dates, duration, type, title, notes and source identifiers in its private local database. " +
             "It does not read routes, location, heart rate, weight or steps, write to Health Connect, or run background imports. " +
             "No Internet permission, analytics, remote crash reporting or automatic cloud backup is used. " +

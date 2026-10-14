@@ -1,5 +1,7 @@
 # Offline catalogue and Health Connect review — 2026-10-13
 
+Health Connect was updated in [0.4.2](health-connect-diagnostics-and-plans.md): first-grant history rules replace the rolling date restriction, older-history permission is optional, and pagination/diagnostics are improved. Use its current phone test; the findings below describe the earlier build.
+
 Reviewed the 0.3.0 checkout, including its existing untracked Habits & Recovery source. The catalogue increment is version **0.4.0 / code 4**. Existing habit files, personal database paths, workout handling and the encryption envelope are preserved. No phone was connected or tested.
 
 ## Health Connect findings

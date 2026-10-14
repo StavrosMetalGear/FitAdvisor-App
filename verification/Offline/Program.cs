@@ -43,9 +43,44 @@ try
     await Reject(() => diary.SaveWorkoutAsync(run with { Id = imported.Id }));
     await Reject(() => diary.ImportWorkoutsAsync(new[] { imported with { Id = run.Id, ExternalId = "different" } }));
     Check(await diary.ImportWorkoutsAsync(new[] { imported with { Id = Guid.NewGuid(), SourcePackage = "second.source" } }) == 1, "Origin collision");
+    var today = DateOnly.FromDateTime(DateTime.Today);
+    var planned = run with { Id = Guid.NewGuid(), Date = today.AddDays(14), Title = "Planned run", DistanceKm = null, Status = "planned" };
+    await diary.SaveWorkoutAsync(planned);
+    await Reject(() => diary.SaveWorkoutAsync(planned with { Status = "completed", DistanceKm = 5 }));
+    await Reject(() => diary.ImportWorkoutsAsync(new[] { imported with { Status = "planned" } }));
+    await Reject(() => diary.SaveWorkoutAsync(planned with { Status = "unknown" }));
+    await Reject(() => Task.Run(() => planned.Complete(today.AddDays(1), 1200, 3, today)));
+    await Reject(() => Task.Run(() => planned.Complete(today, 0, 3, today)));
+    await diary.SaveWorkoutAsync(planned with { DurationSeconds = 2400 });
+    var reopened = new SqlitePersonalDiary(path);
+    var persistedPlan = (await reopened.GetWorkoutsAsync()).Single(w => w.Id == planned.Id);
+    Check(persistedPlan.IsPlanned && persistedPlan.DurationSeconds == 2400, "Plan status/edit lost on reopen");
+    var beforeCompletion = WorkoutTotals.Completed(await reopened.GetWorkoutsAsync());
+    Check(beforeCompletion.Count == 4 && beforeCompletion.DurationSeconds == 7900, "Plan entered completed totals");
+    var completed = persistedPlan.Complete(today.AddDays(-1), 1200, 3, today);
+    await Reject(() => Task.Run(() => completed.Complete(today, 1200, 3, today)));
+    await diary.SaveWorkoutAsync(completed);
+    var actual = (await reopened.GetWorkoutsAsync()).Single(w => w.Id == planned.Id);
+    Check(actual.IsCompleted && actual.Date == today.AddDays(-1) && actual.DurationSeconds == 1200 && actual.CreatedAt == planned.CreatedAt, "Completion lost actual values or identity");
+    Check(WorkoutTotals.Completed(await reopened.GetWorkoutsAsync()).DurationSeconds == beforeCompletion.DurationSeconds + 1200, "Actual duration absent from totals");
+    await diary.DeleteWorkoutAsync(planned.Id);
+    Check(!(await reopened.GetWorkoutsAsync()).Any(w => w.Id == planned.Id), "Completed plan deletion failed");
+    await diary.SaveWorkoutAsync(planned); // Keep a future plan in the encrypted roundtrip below.
+    Sql(path, "UPDATE workouts SET payload=json_remove(payload,'$.Status') WHERE source='health-connect';");
+    Check((await reopened.GetWorkoutsAsync()).Where(w => !w.IsManual).All(w => w.IsCompleted), "Legacy workouts did not default to completed");
+    var athens = TimeZoneInfo.FindSystemTimeZoneById("Europe/Athens");
+    var spring = HealthImportRange.Create(new(2026, 3, 29), new(2026, 3, 29), today, athens);
+    var autumn = HealthImportRange.Create(new(2025, 10, 26), new(2025, 10, 26), today, athens);
+    Check((spring.End - spring.Start).TotalHours == 23 && (autumn.End - autumn.Start).TotalHours == 25, "Local DST date boundaries incorrect");
+    Check(spring.Start.Date == new DateTime(2026, 3, 29) && spring.End.Date == new DateTime(2026, 3, 30), "Inclusive Through boundary incorrect");
+    await Reject(() => Task.Run(() => HealthImportRange.Create(today, today.AddDays(1), today, athens)));
+    await Reject(() => Task.Run(() => HealthImportRange.Create(today, today.AddDays(-1), today, athens)));
+    Check(HealthImportRange.Create(today.AddDays(-100), today, today, athens).Start < DateTimeOffset.Now.AddDays(-30), "Rolling history restriction remains");
     var dashboard = await diary.GetDashboardAsync(day);
     Check(dashboard.Target!.TargetKcal == 1836 && dashboard.ConsumedKcal == 300, "Workout changed target or allowance");
     var snapshot = await diary.CreateBackupAsync();
+    Check(snapshot.FormatVersion == 4 && snapshot.Workouts.Single(w => w.Id == planned.Id).IsPlanned, "Planned backup format missing");
+    await Reject(() => diary.RestoreBackupAsync(snapshot with { FormatVersion = 3 }));
     const string pass = "synthetic-long-backup-passphrase";
     var encrypted = BackupCodec.Encrypt(snapshot, pass);
     Check(!System.Text.Encoding.UTF8.GetString(encrypted).Contains("Synthetic only"), "Plaintext exported");
@@ -61,6 +96,7 @@ try
     var fresh = new SqlitePersonalDiary(Path.Combine(root, "fresh.db")); await fresh.RestoreBackupAsync(decoded);
     CultureInfo.CurrentCulture = sourceCulture;
     var restored = await fresh.CreateBackupAsync();
+    Check(restored.Workouts.Single(w => w.Id == planned.Id).IsPlanned && restored.Workouts.Single(w => w.Id == planned.Id).Date == planned.Date, "Plan status/date lost in encrypted restore");
     Check(restored.Profiles.SequenceEqual(snapshot.Profiles) && restored.Targets.SequenceEqual(snapshot.Targets), "Profile/target snapshots lost");
     Check(restored.Meals.SequenceEqual(snapshot.Meals) && restored.Weights.SequenceEqual(snapshot.Weights), "IDs, timestamps, notes or macros lost");
     Check(restored.Workouts.Count() == snapshot.Workouts.Length && restored.Workouts.All(w => snapshot.Workouts.Any(s => s.Id == w.Id && s.Sets.SequenceEqual(w.Sets) && s.SourcePackage == w.SourcePackage)), "Workouts/sets/provenance lost");
@@ -81,7 +117,7 @@ try
     await upgrading.SaveWorkoutAsync(gym); Check((await upgrading.GetWorkoutsAsync()).Count == 1, "v2 table missing");
     await fresh.DeleteWorkoutAsync(imported.Id); Check(!(await fresh.GetWorkoutsAsync()).Any(w => w.Id == imported.Id), "Delete failed");
     Check(await fresh.ImportWorkoutsAsync(new[] { imported }) == 1, "Explicit reimport after local deletion failed");
-    Console.WriteLine("Offline checks passed: authenticated backup, wrong password/tamper/truncation, Greek locale, full history roundtrip, atomic failed restore, v1 upgrade, manual CRUD, sets, import deduplication/provenance, calorie isolation.");
+    Console.WriteLine("Offline checks passed: authenticated backup, wrong password/tamper/truncation, Greek locale, full history roundtrip, atomic failed restore, v1 upgrade, manual CRUD, sets, import deduplication/provenance, calorie isolation, planned edit/reopen/completion/deletion/totals/backup, legacy status, inclusive Health Connect dates and DST.");
 }
 finally
 {
