@@ -8,6 +8,16 @@ using Microsoft.Data.Sqlite;
 static void Check(bool value, string message) { if (!value) throw new Exception(message); }
 static void Reject(Action action) { try { action(); } catch (ArgumentException) { return; } throw new Exception("Invalid input accepted"); }
 var foods = FoodCatalogue.Foods;
+Check(FoodCatalogue.Search("chicken").Count > 0 && FoodCatalogue.Search("ΚΟΤΌΠΟΥΛΟ").Count > 0, "Chicken bilingual search");
+Check(FoodCatalogue.Suggest("chichen").Any(f => f.Name.Contains("Chicken", StringComparison.OrdinalIgnoreCase)), "Chicken typo suggestion");
+Check(FoodCatalogue.Suggest("xyzxyzxyz").Count == 0, "Unreasonable typo suggestion");
+var macroMeal = new MealRecord(Guid.NewGuid(), new(2026,10,14), "Macro fixture", 1, "serving", 999, 10, 20, 10);
+var macro = MacroEnergy.From([macroMeal]);
+Check(macro.CanChart && macro.Energy == 210 && Math.Abs(macro.ProteinPercent - 100d*40/210) < 1e-10 && Math.Abs(macro.FatPercent - 100d*90/210) < 1e-10, "4/4/9 energy fractions");
+Check(Math.Abs(macro.ProteinPercent + macro.CarbohydratePercent + macro.FatPercent - 100) < 1e-10, "Percentage total");
+Check(!MacroEnergy.From([]).CanChart && !MacroEnergy.From([macroMeal with { ProteinG = null }]).CanChart && !MacroEnergy.From([macroMeal with { ProteinG=0, CarbohydratesG=0, FatG=0 }]).CanChart, "Empty/incomplete/zero chart");
+Check(MacroEnergy.From([macroMeal with { CarbohydratesG=0, FatG=0 }]).ProteinPercent == 100, "Single macro energy");
+MacroEnergy.ValidateTargets(30,40,30); Reject(()=>MacroEnergy.ValidateTargets(30,40,20)); Reject(()=>MacroEnergy.ValidateTargets(double.NaN,40,60));
 Check(foods.Count == 7793 && foods.Select(f => f.FdcId).Distinct().Count() == foods.Count, "Catalogue completeness/IDs");
 // Independently compare every bundled nutrient and description to the original JSON.
 using (var zip = ZipFile.OpenRead(args[0]))

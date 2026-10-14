@@ -11,7 +11,7 @@ public sealed class MealsViewModel : ViewModelBase
     private DateTime? listDate;
     private string name = "", quantity = "1", unit = "serving", calories = "", protein = "", carbs = "", fat = "";
     public DateTime Date { get => date; set { if (Set(ref date, value)) { listDate = null; Meals.Clear(); Notify(nameof(DayText)); } } }
-    public string DayText => listDate is { } loaded ? $"Meals for {loaded:yyyy-MM-dd}" : "Tap Show meals to load the selected date.";
+    public string DayText => listDate is { } loaded ? $"Meals for {loaded:yyyy-MM-dd} · {Meals.Count} entries · {Meals.Sum(m => m.CaloriesKcal):0.##} kcal" : "Tap Show meals to load the selected date.";
     public string Name { get => name; set => Set(ref name, value); }
     public string Quantity { get => quantity; set => Set(ref quantity, value); }
     public string Unit { get => unit; set => Set(ref unit, value); }

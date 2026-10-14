@@ -2,8 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:FitAdvisor.Mobile.ViewModels" xmlns:views="clr-namespace:FitAdvisor.Mobile.Views" xmlns:core="clr-namespace:FitAdvisor.Core;assembly=FitAdvisor.Core" x:Class="FitAdvisor.Mobile.Views.MealsPage" x:Name="PageRoot" x:DataType="vm:MealsViewModel" Title="Meals">
   <ScrollView x:Name="Scroller"><VerticalStackLayout Padding="20" Spacing="16">
     <Label Text="Meal diary" Style="{StaticResource Heading}" />
-    <Button Text="Search offline food catalogue" Clicked="CatalogueClicked" AutomationId="OpenFoodCatalogue" />
+    <Button Text="Search foods / Αναζήτηση τροφίμων" Clicked="CatalogueClicked" AutomationId="OpenFoodCatalogue" />
     <Border Style="{StaticResource Card}"><VerticalStackLayout Spacing="10">
+    <Label Text="Manual food entry / Χειροκίνητη καταχώριση — enter known nutrition totals; this name field does not search foods." FontAttributes="Bold" />
     <Label Text="Local diary date" /><DatePicker Date="{Binding Date}" Format="yyyy-MM-dd" />
     <Button Text="Show meals" Command="{Binding LoadCommand}" />
     <Label Text="Meal or food name" /><Entry Text="{Binding Name}" MaxLength="200" AutomationId="MealName" />
@@ -19,6 +20,7 @@
     <Button Style="{StaticResource SecondaryButton}" Text="Clear form" Command="{Binding CancelCommand}" />
     <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" /><Label Text="{Binding Status}" AutomationId="MealStatus" />
     <Label Text="{Binding DayText}" FontAttributes="Bold" />
+    <views:MacroChart x:Name="DailyMacros" />
     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Meals}" Spacing="16">
       <BindableLayout.EmptyView><Label Text="No meal entries on this date." /></BindableLayout.EmptyView>
       <BindableLayout.ItemTemplate><DataTemplate x:DataType="core:MealRecord">

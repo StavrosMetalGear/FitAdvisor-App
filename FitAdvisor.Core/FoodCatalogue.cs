@@ -43,6 +43,24 @@ public sealed record FoodNutritionSnapshot(string Source, int FdcId, string Desc
 
 public static class FoodCatalogue
 {
+    public static IReadOnlyList<CatalogueFood> Suggest(string query, int limit = 20)
+    {
+        var term = Normalize(query.Trim());
+        if (term.Length < 4 || term.Length > 40 || term.Contains(' ')) return [];
+        int Distance(string word) {
+            var previous = Enumerable.Range(0, word.Length + 1).ToArray();
+            for (var i = 1; i <= term.Length; i++) {
+                var next = new int[word.Length + 1]; next[0] = i;
+                for (var j = 1; j <= word.Length; j++) next[j] = Math.Min(Math.Min(next[j-1]+1, previous[j]+1), previous[j-1]+(term[i-1]==word[j-1]?0:1));
+                previous = next;
+            }
+            return previous[word.Length];
+        }
+        return Foods.Select(f => (Food: f, Score: Normalize(f.Name + " " + f.GreekAliases)
+            .Split(new[] {' ', ',', ';', '/'}, StringSplitOptions.RemoveEmptyEntries)
+            .Where(w => Math.Abs(w.Length-term.Length)<=1).Select(Distance).DefaultIfEmpty(99).Min()))
+            .Where(x => x.Score <= 1).OrderBy(x=>x.Score).ThenBy(x=>x.Food.Name).Take(limit).Select(x=>x.Food).ToArray();
+    }
     private static readonly Lazy<IReadOnlyList<CatalogueFood>> foods = new(Load);
     public static IReadOnlyList<CatalogueFood> Foods => foods.Value;
     private static IReadOnlyList<CatalogueFood> Load()
