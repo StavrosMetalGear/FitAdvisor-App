@@ -9,6 +9,7 @@ public sealed class WorkoutsPage : ContentPage
 {
     private readonly IWorkoutDiary diary;
     private readonly IHealthSessionReader health;
+    private readonly GymSessionPage gym;
     private readonly DatePicker date = new() { Date = DateTime.Today, MaximumDate = new DateTime(2100, 12, 31) };
     private readonly Picker kind = new() { Title = "Workout type", ItemsSource = new[] { "Run", "Gym", "Other activity" }, SelectedIndex = 0 };
     private readonly Picker workoutStatus = new() { Title = "Workout status", ItemsSource = new[] { "Completed", "Planned" }, SelectedIndex = 0 };
@@ -38,9 +39,9 @@ public sealed class WorkoutsPage : ContentPage
     private WorkoutRecord? editing;
     private Guid? editingSet;
     private bool busy;
-    public WorkoutsPage(IWorkoutDiary diary, IHealthSessionReader health)
+    public WorkoutsPage(IWorkoutDiary diary, IHealthSessionReader health, GymSessionPage gym)
     {
-        this.diary = diary; this.health = health; Title = "Workouts";
+        this.diary = diary; this.health = health; this.gym = gym; Title = "Workouts";
         date.DateSelected += (_, _) => { if (date.Date > DateTime.Today) workoutStatus.SelectedIndex = 1; };
         var addSet = new Button { Text = "Add strength set" };
         addSet.Clicked += (_, _) => {
@@ -73,13 +74,19 @@ public sealed class WorkoutsPage : ContentPage
         {
             var summary = new Label(); summary.SetBinding(Label.TextProperty, nameof(WorkoutRecord.Summary));
             var detail = new Label(); detail.SetBinding(Label.TextProperty, nameof(WorkoutRecord.Details));
-            var edit = new Button { Text = "Edit" }; edit.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.IsManual));
+            var edit = new Button { Text = "Edit" }; edit.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.CanEdit));
             edit.Clicked += (_, _) => { if (edit.BindingContext is WorkoutRecord record) BeginEdit(record); };
             var delete = new Button { Text = "Delete entry" };
             var complete = new Button { Text = "Mark completed" }; complete.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.IsPlanned));
+            var details = new Button { Text = "Gym Session / detailed sets" };
+            details.SetBinding(IsVisibleProperty, nameof(WorkoutRecord.CanOpenGymSession));
+            details.Clicked += async (_, _) => { if(details.BindingContext is WorkoutRecord record && record.Kind == "gym") await RunAsync(async () => {
+                if(record.IsPlanned) await gym.LaunchPlan(record); else await gym.OpenWorkout(record.Id);
+                await Shell.Current.GoToAsync("//main/gym/gymPage");
+            }); };
             complete.Clicked += async (_, _) => { if (complete.BindingContext is WorkoutRecord record) await RunAsync(() => CompleteAsync(record)); };
             delete.Clicked += async (_, _) => { if (delete.BindingContext is WorkoutRecord record) await RunAsync(() => DeleteAsync(record)); };
-            return DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = { summary, detail, new VerticalStackLayout { Spacing = 8, Children = { edit, complete, delete } } } });
+            return DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = { summary, detail, new VerticalStackLayout { Spacing = 8, Children = { details, edit, complete, delete } } } });
         });
         var import = new Button { Text = "Import" };
         import.Clicked += async (_, _) => await RunAsync(ImportAsync);
@@ -124,8 +131,8 @@ public sealed class WorkoutsPage : ContentPage
     {
         var items = await diary.GetWorkoutsAsync(); records.Clear();
         foreach (var item in items.OrderBy(w => w.IsPlanned ? 0 : 1).ThenByDescending(w => w.Date)) records.Add(item);
-        var totals = WorkoutTotals.Completed(items);
-        completedTotals.Text = $"Completed only: {totals.Count} workouts · {totals.DurationSeconds / 60:g} min. Planned: {items.Count(w => w.IsPlanned)} (excluded).";
+        var totals = diary is FitAdvisor.Storage.SqlitePersonalDiary storage ? await storage.GetWorkoutTotalsAsync() : WorkoutTotals.Completed(items);
+        completedTotals.Text = $"Completed only: {totals.Count} workouts · {totals.DurationSeconds / 60:0.#} min. Planned: {items.Count(w => w.IsPlanned)} (excluded).";
     }
     private void BeginEdit(WorkoutRecord record)
     {

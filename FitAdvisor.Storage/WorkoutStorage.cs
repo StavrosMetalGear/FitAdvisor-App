@@ -10,7 +10,11 @@ public sealed partial class SqlitePersonalDiary
         using var cmd = Command(db, "SELECT payload FROM workouts ORDER BY local_date DESC,rowid DESC");
         using var reader = cmd.ExecuteReader(); var records = new List<WorkoutRecord>();
         while (reader.Read()) records.Add(ReadJson<WorkoutRecord>(reader.GetString(0)));
-        return records;
+        var sessions=HabitRead<GymSession>(db,"gym_sessions");
+        return records.Select(w => {
+            var gym=sessions.FirstOrDefault(s=>s.Status!="cancelled" && (s.WorkoutId==w.Id || s.ImportedWorkoutId==w.Id));
+            return w with {GymDetailId=gym?.Id,ExcludedFromTotals=gym?.ImportedWorkoutId==w.Id};
+        }).ToArray();
     });
 
     private static void WriteWorkout(SqliteConnection db, WorkoutRecord record, SqliteTransaction tx)
@@ -33,6 +37,7 @@ public sealed partial class SqlitePersonalDiary
         return Execute(db =>
         {
             using var tx = db.BeginTransaction();
+            if (HabitRead<GymSession>(db,"gym_sessions",tx).Any(s=>s.WorkoutId==record.Id && s.Status != "cancelled")) throw new ArgumentException("Edit this workout through Gym Session to preserve detailed sets and recovery.");
             using var query = Command(db, "SELECT payload FROM workouts WHERE id=$id", tx, ("$id", record.Id.ToString()));
             if (query.ExecuteScalar() is string json)
             {
@@ -44,7 +49,11 @@ public sealed partial class SqlitePersonalDiary
         });
     }
 
-    public Task DeleteWorkoutAsync(Guid id) => Delete("workouts", id);
+    public Task DeleteWorkoutAsync(Guid id) => Execute(db => {
+        using var tx=db.BeginTransaction();
+        if(HabitRead<GymSession>(db,"gym_sessions",tx).Any(s=>s.WorkoutId==id || s.ImportedWorkoutId==id)) throw new ArgumentException("This workout belongs to a Gym Session or linked import. Undo completion or unlink in Gym Session first.");
+        using var cmd=Command(db,"DELETE FROM workouts WHERE id=$id",tx,("$id",id.ToString()));cmd.ExecuteNonQuery();tx.Commit();return true;
+    });
 
     public Task<int> ImportWorkoutsAsync(IReadOnlyList<WorkoutRecord> records)
     {
@@ -57,6 +66,7 @@ public sealed partial class SqlitePersonalDiary
         return Execute(db =>
         {
             using var tx = db.BeginTransaction(); var changed = 0;
+            var gymSessions=HabitRead<GymSession>(db,"gym_sessions",tx);
             foreach (var incoming in records)
             {
                 using var query = Command(db, "SELECT payload FROM workouts WHERE source=$source AND source_package=$package AND external_id=$external", tx,
@@ -73,6 +83,9 @@ public sealed partial class SqlitePersonalDiary
                     using var collision = Command(db, "SELECT COUNT(*) FROM workouts WHERE id=$id", tx, ("$id", record.Id.ToString()));
                     if (Convert.ToInt32(collision.ExecuteScalar()) != 0) throw new ArgumentException("Import record ID conflicts with an existing workout.");
                 }
+                var linked=gymSessions.FirstOrDefault(s=>s.ImportedWorkoutId==record.Id);
+                if(linked!=null && (record.Kind!="gym" || record.StartTime==null || record.StartTime>=linked.FinishedAt || record.StartTime.Value.AddSeconds(record.DurationSeconds)<=linked.StartedAt))
+                    throw new ArgumentException("An edited source session is no longer compatible with its Gym Session link. Unlink it before importing this change; nothing was imported.");
                 WriteWorkout(db, record, tx); changed++;
             }
             tx.Commit(); return changed;

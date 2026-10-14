@@ -21,12 +21,16 @@ public sealed record WorkoutRecord(Guid Id, DateOnly Date, int UtcOffsetMinutes,
     public bool IsPlanned => Status == "planned";
     public bool IsCompleted => Status == "completed";
     public bool IsManual => Source == "manual";
-    public string Summary => $"{(IsPlanned ? "Planned" : "Completed")} · {Date:yyyy-MM-dd} · {Title} · {DurationSeconds / 60:g} min · {Source}";
-    public string Details => IsPlanned ? $"Planned duration: {DurationSeconds / 60:g} min (excluded from completed totals)" :
+    public Guid? GymDetailId { get; init; }
+    public bool ExcludedFromTotals { get; init; }
+    public bool CanEdit => IsManual && GymDetailId == null;
+    public bool CanOpenGymSession => Kind == "gym" && (IsPlanned || GymDetailId != null);
+    public string Summary => $"{(IsPlanned ? "Planned" : "Completed")} · {Date:yyyy-MM-dd} · {Title} · {DurationSeconds / 60:0.#} min · {Source}";
+    public string Details => (ExcludedFromTotals ? "Linked Gym Session import (excluded from duplicate totals) · " : GymDetailId != null ? "Gym Session: open detailed sets · " : "") + (IsPlanned ? $"Planned duration: {DurationSeconds / 60:g} min (excluded from completed totals)" :
         (DistanceKm is > 0
         ? $"{DistanceKm:g} km · pace {DurationSeconds / 60 / DistanceKm.Value:g3} min/km"
-        : Sets.Length > 0 ? $"{Sets.Length} strength sets" : "Distance not recorded")
-        + (IsManual ? "" : $" · Source: {SourcePackage} · exercise type {ExternalExerciseType}");
+        : Sets.Length > 0 ? $"{Sets.Length} strength sets" : GymDetailId != null ? "Manual strength log; heart rate and calories unavailable" : "Distance not recorded")
+        + (IsManual ? "" : $" · Source: {SourcePackage} · exercise type {ExternalExerciseType}"));
     public void Validate()
     {
         if (Id == Guid.Empty) throw new ArgumentException("A workout ID is required.");
@@ -72,7 +76,7 @@ public sealed record WorkoutRecord(Guid Id, DateOnly Date, int UtcOffsetMinutes,
 public sealed record WorkoutTotals(int Count, double DurationSeconds)
 {
     public static WorkoutTotals Completed(IEnumerable<WorkoutRecord> records) =>
-        new(records.Count(w => w.IsCompleted), records.Where(w => w.IsCompleted).Sum(w => w.DurationSeconds));
+        new(records.Count(w => w.IsCompleted && !w.ExcludedFromTotals), records.Where(w => w.IsCompleted && !w.ExcludedFromTotals).Sum(w => w.DurationSeconds));
 }
 
 public interface IWorkoutDiary

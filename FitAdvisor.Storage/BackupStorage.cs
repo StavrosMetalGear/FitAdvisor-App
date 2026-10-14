@@ -23,7 +23,9 @@ public sealed partial class SqlitePersonalDiary
             r.GetDouble(2), r.IsDBNull(3) ? null : r.GetString(3), OptionalId(r,4)), DateTimeOffset.Parse(r.GetString(5)), DateTimeOffset.Parse(r.GetString(6))));
         using (var cmd = Command(db, "SELECT payload FROM workouts ORDER BY rowid", tx))
         using (var r = cmd.ExecuteReader()) while (r.Read()) workouts.Add(ReadJson<WorkoutRecord>(r.GetString(0)));
-        var backup = new DiaryBackup(4, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
+        var backup = new DiaryBackup(5, DateTimeOffset.UtcNow, profiles.ToArray(), targets.ToArray(), meals.ToArray(), weights.ToArray(), workouts.ToArray()) {
+            GymSessions = HabitRead<GymSession>(db,"gym_sessions",tx), GymExercises = HabitRead<GymExercise>(db,"gym_exercises",tx),
+            GymPreferences = HabitRead<GymPreferences>(db,"gym_preferences",tx).SingleOrDefault() ?? new(),
             Habits = HabitRead<HabitRecord>(db, "habits", tx), HabitGoals = HabitRead<HabitGoal>(db, "habit_goals", tx),
             HabitSettings = HabitRead<HabitSettings>(db, "habit_settings", tx).SingleOrDefault() ?? new() };
         backup.Validate(); tx.Commit(); return backup;
@@ -36,7 +38,7 @@ public sealed partial class SqlitePersonalDiary
         {
             // Replacing all records is atomic, including IDs, timestamps and historical targets.
             using var tx = db.BeginTransaction();
-            using (var clear = Command(db, "DELETE FROM habits; DELETE FROM habit_goals; DELETE FROM habit_settings; DELETE FROM workouts; DELETE FROM meals; DELETE FROM weights; DELETE FROM daily_targets; DELETE FROM profile_revisions;", tx))
+            using (var clear = Command(db, "DELETE FROM gym_sessions; DELETE FROM gym_exercises; DELETE FROM gym_preferences; DELETE FROM habits; DELETE FROM habit_goals; DELETE FROM habit_settings; DELETE FROM workouts; DELETE FROM meals; DELETE FROM weights; DELETE FROM daily_targets; DELETE FROM profile_revisions;", tx))
                 clear.ExecuteNonQuery();
             foreach (var p in backup.Profiles)
             {
@@ -71,6 +73,9 @@ public sealed partial class SqlitePersonalDiary
             foreach (var g in backup.HabitGoals) WriteGoal(db, g, tx);
             foreach (var h in backup.Habits) WriteHabit(db, h, tx);
             WriteSettings(db, backup.HabitSettings, tx);
+            foreach (var s in backup.GymSessions) GymWrite(db,"gym_sessions",s.Id.ToString(),s,tx);
+            foreach (var e in backup.GymExercises) GymWrite(db,"gym_exercises",e.Id,e,tx);
+            GymWrite(db,"gym_preferences","1",backup.GymPreferences,tx);
             tx.Commit(); return true;
         });
     }

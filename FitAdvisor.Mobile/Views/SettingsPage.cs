@@ -20,12 +20,12 @@ public sealed class SettingsPage : ContentPage
             DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = {
                 new Label { Text = "Theme", FontAttributes = FontAttributes.Bold }, theme } }),
             DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = {
-                ToggleRow("Show daily message", visible), new Label { Text = "Food, macro chart and message language" }, language,
+                ToggleRow("Show daily message", visible), new Label { Text = "Food, macro chart, gym guidance and message language" }, language,
                 DesignComponents.Caption("Original messages saved locally. The same message pair stays for the local calendar day; switching language shows its translation. No alerts or connection needed.") } }),
             DesignComponents.Card(new VerticalStackLayout { Spacing = 8, Children = {
                 ToggleRow("Animate Home art", animation),
                 DesignComponents.Caption("One decorative activity at a time. Pauses away from Home and respects the device's Remove animations setting. When disabled, a static runner is shown.") } }),
-            DesignComponents.Caption("Preferences are saved on this device separately from your diary and encrypted diary backups.") } } };
+            DesignComponents.Caption("Appearance preferences stay on this device. Gym Session preferences are included in encrypted diary backups.") } } };
     }
     private static Grid ToggleRow(string text, Switch control)
     {

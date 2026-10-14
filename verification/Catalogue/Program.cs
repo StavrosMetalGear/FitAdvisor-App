@@ -60,7 +60,7 @@ try {
     var manual = new MealRecord(Guid.NewGuid(),day,"Existing manual meal",1,"serving",200);
     await diary.SaveMealAsync(manual);
     // Simulate v0.3.0's schema-v3 database without the catalogue column.
-    using (var db = new SqliteConnection($"Data Source={path};Pooling=False")) { db.Open(); using var cmd = db.CreateCommand(); cmd.CommandText = "ALTER TABLE meals DROP COLUMN nutrition_snapshot; PRAGMA user_version=3;"; cmd.ExecuteNonQuery(); }
+    using (var db = new SqliteConnection($"Data Source={path};Pooling=False")) { db.Open(); using var cmd = db.CreateCommand(); cmd.CommandText = "DROP TABLE gym_sessions; DROP TABLE gym_exercises; DROP TABLE gym_preferences; ALTER TABLE meals DROP COLUMN nutrition_snapshot; PRAGMA user_version=3;"; cmd.ExecuteNonQuery(); }
     Check((await diary.GetMealsAsync(day)).Single().CaloriesKcal == 200, "v3 upgrade lost data");
     var meal = snapshot.Meal(day); await diary.SaveMealAsync(meal);
     var saved = (await new SqlitePersonalDiary(path).GetMealsAsync(day)).Single(m=>m.Id==meal.Id);

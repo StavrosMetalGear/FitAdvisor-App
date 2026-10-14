@@ -34,6 +34,7 @@ public sealed class HomePage : ContentPage
         AddDestination(stack, "Food Diary", "Log meals and review your food diary", "meals", "HomeFood");
         AddDestination(stack, "Weight", "Measurements and history", "weight", "HomeWeight");
         AddDestination(stack, "Workouts", "Running and gym sessions", "workouts", "HomeWorkouts");
+        AddDestination(stack, "Gym Session / Γυμναστήριο", "Live manual sets, recovery and exercise history", "gym", "HomeGym");
         AddDestination(stack, "Habits & Recovery", "Optional habits, personal goals and weekly trends", "habits", "HomeHabits");
         AddDestination(stack, "Health Connect Import", "Review dates and import exercise sessions", "workouts", "HomeHealth", true);
         AddDestination(stack, "Backup / Restore", "Encrypted backup and local restore", "data", "HomeBackup");

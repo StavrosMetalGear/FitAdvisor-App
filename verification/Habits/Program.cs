@@ -12,7 +12,7 @@ try
     var day = new DateOnly(2026, 10, 5); var path = Path.Combine(root, "diary.db"); var diary = new SqlitePersonalDiary(path);
     await diary.SaveMealAsync(new(Guid.NewGuid(), day, "Existing meal", 1, "portion", 300));
     var old = await diary.CreateBackupAsync();
-    Sql(path, "ALTER TABLE meals DROP COLUMN nutrition_snapshot; DROP TABLE habits; DROP TABLE habit_goals; DROP TABLE habit_settings; PRAGMA user_version=2;");
+    Sql(path, "DROP TABLE gym_sessions; DROP TABLE gym_exercises; DROP TABLE gym_preferences; ALTER TABLE meals DROP COLUMN nutrition_snapshot; DROP TABLE habits; DROP TABLE habit_goals; DROP TABLE habit_settings; PRAGMA user_version=2;");
     Check((await diary.GetMealsAsync(day)).Count == 1 && !(await diary.GetHabitSettingsAsync()).Smoking, "v2 migration lost data or enabled tracker");
     var settings = new HabitSettings(true, true, true, false, day, 20, 0.25, "EUR"); await diary.SaveHabitSettingsAsync(settings);
     var goal = new HabitGoal(Guid.NewGuid(), "eating", "Takeaway", "times", 2); await diary.SaveHabitGoalAsync(goal);
