@@ -5,17 +5,17 @@
     <UseMaui>true</UseMaui><MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation><MauiStrictXamlCompilation>true</MauiStrictXamlCompilation><SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <ApplicationTitle>FitAdvisor</ApplicationTitle><ApplicationId>com.stavros.fitadvisor</ApplicationId>
-    <ApplicationDisplayVersion>0.5.0</ApplicationDisplayVersion><ApplicationVersion>7</ApplicationVersion>
+    <ApplicationDisplayVersion>0.6.0</ApplicationDisplayVersion><ApplicationVersion>8</ApplicationVersion>
     <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <!-- Offline APKs do not need debugger/profiler network access. -->
-    <AndroidNeedsInternetPermission>false</AndroidNeedsInternetPermission>
+    <AndroidNeedsInternetPermission>true</AndroidNeedsInternetPermission>
     <AndroidIncludeDebugSymbols>false</AndroidIncludeDebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <MauiIcon Include="Resources/AppIcon/appicon.svg" ForegroundFile="Resources/AppIcon/appiconfg.svg" Color="#145E50" />
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#145E50" BaseSize="128,128" />
-    <MauiImage Include="Resources/Images/*.svg" /><MauiFont Include="Resources/Fonts/*" />
+    <MauiImage Include="Resources/Images/*.svg" /><MauiImage Include="Resources/Images/guide*.jpg" /><MauiImage Remove="Resources/Images/guide_16_0.jpg" /><MauiFont Include="Resources/Fonts/*" />
     <MauiAsset Include="Resources/Raw/**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="MainPage.xaml.cs" /><MauiXaml Remove="MainPage.xaml" />
     <ProjectReference Include="../FitAdvisor.Core/FitAdvisor.Core.csproj" />

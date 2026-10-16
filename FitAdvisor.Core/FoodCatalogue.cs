@@ -25,16 +25,23 @@ public sealed record CatalogueFood(int FdcId, string Name, double? CaloriesPer10
 public sealed record FoodNutritionSnapshot(string Source, int FdcId, string Description, double Grams,
     double CaloriesPer100G, double? ProteinPer100G, double? CarbohydratesPer100G, double? FatPer100G)
 {
+    public string? LibraryId { get; init; }
+    public bool Usable { get; init; } = true;
+    public string Kind { get; init; } = "usda";
+    public string? ProductCode { get; init; }
+    public string Unit { get; init; } = "g";
+    public string Basis { get; init; } = "as sold";
     public double Calories => CaloriesPer100G * Grams / 100;
     public double? Protein => ProteinPer100G * Grams / 100;
     public double? Carbs => CarbohydratesPer100G * Grams / 100;
     public double? Fat => FatPer100G * Grams / 100;
-    public string Attribution => $"{Source} · FDC {FdcId} · {Grams:g} g · nutrition snapshot";
-    public MealRecord Meal(DateOnly date) => new(Guid.NewGuid(), date, Description, Grams, "g", Calories, Protein, Carbs, Fat, NutritionSnapshot: this);
+    public string Attribution => $"{Source} · {(Kind == "usda" ? $"FDC {FdcId}" : ProductCode)} · {Grams:g} {Unit} · {Basis} · nutrition snapshot";
+    public MealRecord Meal(DateOnly date) => new(Guid.NewGuid(), date, Description, Grams, Unit, Calories, Protein, Carbs, Fat, NutritionSnapshot: this);
     public void Validate()
     {
         DiaryValidation.Text(Source, 200, "Food source"); DiaryValidation.Text(Description, 200, "Food description");
-        if (FdcId <= 0) throw new ArgumentException("Invalid FDC ID.");
+        if (Kind is not ("usda" or "off" or "custom") || Unit is not ("g" or "ml")) throw new ArgumentException("Invalid food kind or portion unit.");
+        if (Kind == "usda" && FdcId <= 0) throw new ArgumentException("Invalid FDC ID.");
         DiaryValidation.Number(Grams, .001, 100000, "Grams");
         foreach (var n in new[] { (double?)CaloriesPer100G, ProteinPer100G, CarbohydratesPer100G, FatPer100G })
             if (n is { } v) DiaryValidation.Number(v, 0, 10000, "Nutrition per 100 g");

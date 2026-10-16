@@ -1,0 +1,254 @@
+[
+  {
+    "id": "bb-squat",
+    "upstream": "Barbell_Squat",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat/0.jpg",
+        "sha256": "469a3c5a6eb35b88c45cda9fa7f9086032976fa3d45f5d844a0cc09a95574db5"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat/1.jpg",
+        "sha256": "8663a34f2d0a0a33d3d39b505cf3cdd38e282c1c9020d39d5587976e8d8a3020"
+      }
+    ]
+  },
+  {
+    "id": "bw-squat",
+    "upstream": "Bodyweight_Squat",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/0.jpg",
+        "sha256": "85715b9b75afe568ef7cb1863005be532a2457bf7e340802da0cd5cc06914b62"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/1.jpg",
+        "sha256": "3fa6886632674f02308cdee53ce32649fd648774701fbd20ee280d63be40e5a4"
+      }
+    ]
+  },
+  {
+    "id": "leg-press",
+    "upstream": "Leg_Press",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/0.jpg",
+        "sha256": "55079d514ae8d4dbc526731bb5120748e74a084ebcd546eaa890fa273427f0dc"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/1.jpg",
+        "sha256": "f4e08d4ad4e6542f5dd923bbfabe9a28bf6c960bed02b1b9d65f6bafd6ceb051"
+      }
+    ]
+  },
+  {
+    "id": "leg-extension",
+    "upstream": "Leg_Extensions",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/0.jpg",
+        "sha256": "54fd46441d63459e3cdd26f26b826ad049e835fb7f1984b42398fdfbdefb5bfa"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/1.jpg",
+        "sha256": "9e04d0e306d8fee608305766b14a56df1d1312956d374152f58dcbf267d591a9"
+      }
+    ]
+  },
+  {
+    "id": "leg-curl",
+    "upstream": "Seated_Leg_Curl",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/0.jpg",
+        "sha256": "c84ece2e8b52314c8605e9fc3ef1930a59fec475ff1b5a7f98687a4b8fc580a7"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/1.jpg",
+        "sha256": "2cbd4aa6c22162a209a7ced5d1a68274d44e88780c8c3936c7fab57d6e9918fd"
+      }
+    ]
+  },
+  {
+    "id": "deadlift",
+    "upstream": "Barbell_Deadlift",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg",
+        "sha256": "f032a7e4566eb3e73258580add64bf2756cb465bfcee22fdfffbed0f43f1eae6"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/1.jpg",
+        "sha256": "cf206d0738830af831872cfb054c7cf91a43b435f4cc20f4fdb00a2664654e90"
+      }
+    ]
+  },
+  {
+    "id": "bench",
+    "upstream": "Barbell_Bench_Press_-_Medium_Grip",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg",
+        "sha256": "44ba81b3ea124f625c555ae812b37263f82ae460749bbc9ebbeb55a6309f6663"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/1.jpg",
+        "sha256": "5056475ae5def865dbe52882d30d2730142de2b03231bda304f82fd0b088f608"
+      }
+    ]
+  },
+  {
+    "id": "db-bench",
+    "upstream": "Dumbbell_Bench_Press",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg",
+        "sha256": "06494fc5d679283ad7de10fd60149e543396bbd9ba65b0821937de317ce9e001"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/1.jpg",
+        "sha256": "29ce1d1335b10ae5e92b208c512f4f562493379a9c49bafb249f945c5b702299"
+      }
+    ]
+  },
+  {
+    "id": "push-up",
+    "upstream": "Pushups",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/0.jpg",
+        "sha256": "8e6757ae0dc1d50a30f0ea67cdb330994947716a106451860cf7362bcd15f9f4"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/1.jpg",
+        "sha256": "e835d50facea325828d7a3700185a0d8ba9f908db3f033334f81a6f85f774f27"
+      }
+    ]
+  },
+  {
+    "id": "lat-pull",
+    "upstream": "Wide-Grip_Lat_Pulldown",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
+        "sha256": "929bc29751c35d0a624840b24501e74dc59438d351e66cc017e7ee8682fb3346"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/1.jpg",
+        "sha256": "781952e629e8a4cff549df94ee6b1da7e32c7cd507382d47e8566718c07807dd"
+      }
+    ]
+  },
+  {
+    "id": "row",
+    "upstream": "Seated_Cable_Rows",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Cable_Rows/0.jpg",
+        "sha256": "f5a4adf972f93a6c7b09e003f23005a1163653a7e36b71f1e374acab0243ddf7"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Cable_Rows/1.jpg",
+        "sha256": "0b8e1a0b0fff86cafff45d851ea631a20d469713e9fd735031d3fffb0299fde6"
+      }
+    ]
+  },
+  {
+    "id": "pull-up",
+    "upstream": "Pullups",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",
+        "sha256": "e56c8c43a41cfe2489dcfffc2c8195fd9e8897ba25165dbc34a4154ed6df5c7a"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/1.jpg",
+        "sha256": "40549a52b064e5084a85e2c36afb51438df6ac1097169379a05f21565f8b4f3f"
+      }
+    ]
+  },
+  {
+    "id": "db-press",
+    "upstream": "Dumbbell_Shoulder_Press",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/0.jpg",
+        "sha256": "e0a775bfa0b32b63c84f19fba2b1a05db535bde849feb3e54a3479a943b3bed6"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/1.jpg",
+        "sha256": "940d5aad6b85960e833f88e218de8ce4f806d84cf2764741f1cbff9cce365d84"
+      }
+    ]
+  },
+  {
+    "id": "lateral",
+    "upstream": "Side_Lateral_Raise",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/0.jpg",
+        "sha256": "aa1982c367ea9151ee7769ac1f9f8795209db94a6eb85f7d51a7033886fb7ebc"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/1.jpg",
+        "sha256": "9210e0fb0202c306026d45a55703aaec89b3bef7aafeb7791aa1d06adcf58ab3"
+      }
+    ]
+  },
+  {
+    "id": "curl",
+    "upstream": "Dumbbell_Bicep_Curl",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/0.jpg",
+        "sha256": "fad8458c2f70c39e1abb0a9554bba280da5abf9f8dc2d76f7c0be44ffdbfc99b"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/1.jpg",
+        "sha256": "ec2c3a539aa80ea911a85e00ca9fb74502407e8ef0d8a4526e3b076a5a52b30a"
+      }
+    ]
+  },
+  {
+    "id": "triceps",
+    "upstream": "Triceps_Pushdown",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/0.jpg",
+        "sha256": "5f52b0f699fcd01bcf07053d9abe26e428f227816d62bc61a3232435715b5e7e"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/1.jpg",
+        "sha256": "76f7793452cebb4f00846f9fd5ce3306d90d4b1912b192125cd428c2d8b76a3c"
+      }
+    ]
+  },
+  {
+    "id": "plank",
+    "upstream": "Plank",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg",
+        "sha256": "7a6545152b4c918a84b7e0fd2c3c7d10d571f8fbda8e4459354eb24059ff245d"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg",
+        "sha256": "7f6b690f7594dfab002fb27d36f8247957171b08d19020f24208afd4d5186043"
+      }
+    ]
+  },
+  {
+    "id": "walk",
+    "upstream": "Walking_Treadmill",
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Walking_Treadmill/0.jpg",
+        "sha256": "e13cd5838b04f617026dd097778d0ce298356992e7f972e1d71c7bf1fe1bb4c6"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Walking_Treadmill/1.jpg",
+        "sha256": "5b811c65e89b0eec47ae5006ad711b84c11e61fdbaac98334574cebe5855b025"
+      }
+    ]
+  }
+]

@@ -69,10 +69,14 @@ public sealed record GymSession(Guid Id, string Title, DateTimeOffset StartedAt,
     GymExercise[] Exercises, GymSet[] Sets, string Status = "active", Guid? PlanId = null,
     Guid? ImportedWorkoutId = null, DateTimeOffset? FinishedAt = null, GymRest? Rest = null)
 {
+    public GymEnrichment? Enrichment { get; init; }
+    public int? Effort { get; init; }
     public Guid WorkoutId => PlanId ?? Id;
     public void Validate()
     {
         if (Id == Guid.Empty || StartedAt == default || Status is not ("active" or "finished" or "cancelled")) throw new ArgumentException("Invalid gym session.");
+        if(Enrichment is {} enrichment){enrichment.Validate();if(Status!="finished"||enrichment.ImportId!=ImportedWorkoutId)throw new ArgumentException("Sensor snapshot must match linked finished session.");}
+        if (Effort is {} effort) DiaryValidation.Number(effort,1,10,"Session effort");
         DiaryValidation.Text(Title, 200, "Session title"); Clock.Validate(); Rest?.Validate();
         if (Exercises == null || Sets == null || Exercises.Length > 100 || Sets.Length > 1000) throw new ArgumentException("Invalid session size.");
         if (Exercises.Select(e => e.Id).Distinct().Count() != Exercises.Length || Sets.Select(s => s.Id).Distinct().Count() != Sets.Length) throw new ArgumentException("Duplicate exercise or set.");
@@ -128,5 +132,5 @@ public static class GymCatalogue
         E("plank","Forearm plank","Σανίδα στους πήχεις","Core / Κορμός","None / Χωρίς εξοπλισμό","duration","none"),
         E("walk","Treadmill walk","Περπάτημα σε διάδρομο","Full body / Ολόσωμο","Treadmill / Διάδρομος","distance","none") ];
     public static string Normalize(string text) => new string(text.Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray()).ToLowerInvariant().Replace('ς','σ');
-    public static bool Matches(GymExercise e, string query) => Normalize(e.Display).Contains(Normalize(query.Trim()));
+    public static bool Matches(GymExercise e, string query) => query.Split(' ', StringSplitOptions.RemoveEmptyEntries).All(t => Normalize(e.Display).Contains(Normalize(t)));
 }

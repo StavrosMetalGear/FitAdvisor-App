@@ -48,7 +48,7 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
         using var tx = db.BeginTransaction();
         using var version = Command(db, "PRAGMA user_version", tx);
         var current = Convert.ToInt32(version.ExecuteScalar(), CultureInfo.InvariantCulture);
-        if (current > 5) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
+        if (current > 6) throw new InvalidOperationException("This database was created by a newer FitAdvisor version. Update the app; data has not been changed.");
         if (current == 0)
         {
             using var create = Command(db, """
@@ -109,6 +109,10 @@ public sealed partial class SqlitePersonalDiary : IPersonalDiary, IWorkoutDiary
         {
             using var gym = Command(db, "CREATE TABLE gym_sessions(id TEXT PRIMARY KEY,payload TEXT NOT NULL); CREATE TABLE gym_exercises(id TEXT PRIMARY KEY,payload TEXT NOT NULL); CREATE TABLE gym_preferences(id TEXT PRIMARY KEY,payload TEXT NOT NULL); PRAGMA user_version=5;", tx);
             gym.ExecuteNonQuery();
+        }
+        if (current < 6) {
+            using var additions = Command(db, "CREATE TABLE saved_foods(id TEXT PRIMARY KEY,payload TEXT NOT NULL); CREATE TABLE gym_routines(id TEXT PRIMARY KEY,payload TEXT NOT NULL); PRAGMA user_version=6;", tx);
+            additions.ExecuteNonQuery();
         }
         tx.Commit();
     }

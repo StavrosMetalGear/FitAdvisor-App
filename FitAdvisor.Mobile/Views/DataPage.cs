@@ -27,8 +27,8 @@ public sealed class DataPage : ContentPage
         restore.Clicked += async (_, _) => await RunAsync(RestoreAsync);
         var layout = new VerticalStackLayout { Padding = 20, Spacing = 12, Children = {
             new Label { Text = "Your backup", FontSize = 26, FontAttributes = FontAttributes.Bold },
-            new Label { Text = "Includes all profiles, daily targets, meals, weights, workouts, habit records, goals and habit settings. The backup is encrypted with your passphrase. Keep the passphrase somewhere safe: it cannot be recovered." },
-            new Label { Text = "Choose on-device storage to keep the file on this phone. Android's document provider controls the destination; another provider may store the encrypted file elsewhere. FitAdvisor has no Internet permission." },
+            new Label { Text = "Includes all profiles, daily targets, meals, weights, workouts, habit records, goals habit settings, gym sessions, routines and saved products. The backup is encrypted with your passphrase. Keep the passphrase somewhere safe: it cannot be recovered." },
+            new Label { Text = "Choose on-device storage to keep the file on this phone. Android's document provider controls the destination; another provider may store the encrypted file elsewhere. FitAdvisor never uploads backups. INTERNET enables optional Open Food Facts product lookup only." },
             new Label { Text = "Backup passphrase (at least 12 characters)" }, password, new Label { Text = "Repeat passphrase for export" }, confirmation, export,
             new Label { Text = "Restore replaces all current records, including habits, with the backup. Older backups have no habits and restore disabled trackers. Export your current data first. A valid backup is previewed before you confirm replacement. Existing data stays intact if validation or restore fails." },
             restore, status } };

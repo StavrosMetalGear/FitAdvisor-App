@@ -37,6 +37,11 @@ public partial class AppShell : Shell
     protected override bool OnBackButtonPressed()
     {
         if (FlyoutIsPresented) { FlyoutIsPresented = false; return true; }
+        if (CurrentPage?.Navigation.NavigationStack.Count > 1)
+        {
+            _ = CurrentPage.Navigation.PopAsync();
+            return true;
+        }
         if (CurrentPage is not HomePage) { _ = GoToAsync("//main/home/homePage"); return true; }
         return base.OnBackButtonPressed();
     }

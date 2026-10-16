@@ -77,7 +77,7 @@ try {
  await diary.SaveGymSessionAsync(plannedSession);Check((await diary.GetWorkoutsAsync()).Single(w=>w.Id==plan.Id).IsCompleted,"gym finish replaces plan with same ID");
  await diary.SaveGymSessionAsync(plannedSession with {Status="active",FinishedAt=null});Check((await diary.GetWorkoutsAsync()).Single(w=>w.Id==plan.Id).IsPlanned,"undo gym finish restores planned status");
  // Simulate a pre-gym schema-v4 database, retaining a real workout payload.
- using(var connection=new SqliteConnection("Data Source="+restoredPath+";Pooling=False")) {connection.Open();using var cmd=connection.CreateCommand();cmd.CommandText="DROP TABLE gym_sessions; DROP TABLE gym_exercises; DROP TABLE gym_preferences; PRAGMA user_version=4;";cmd.ExecuteNonQuery();}
+ using(var connection=new SqliteConnection("Data Source="+restoredPath+";Pooling=False")) {connection.Open();using var cmd=connection.CreateCommand();cmd.CommandText="DROP TABLE saved_foods; DROP TABLE gym_routines; DROP TABLE gym_sessions; DROP TABLE gym_exercises; DROP TABLE gym_preferences; PRAGMA user_version=4;";cmd.ExecuteNonQuery();}
  restored=new(restoredPath);Check((await restored.GetWorkoutsAsync()).Count==1 && (await restored.GetGymSessionsAsync()).Length==0,"v4 additive migration preserves existing workout");
  var oldBackup=new DiaryBackup(1,now,[],[],[],[],[]);await restored.RestoreBackupAsync(BackupCodec.Decrypt(BackupCodec.Encrypt(oldBackup,"gym-test-passphrase-2026"),"gym-test-passphrase-2026"));
  Check((await restored.GetGymSessionsAsync()).Length==0 && await restored.GetGymPreferencesAsync()==new GymPreferences(),"old v1 encrypted backup restores with empty gym defaults");

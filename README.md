@@ -31,6 +31,9 @@ The Android application supports:
 - Weight history.
 - Editing and deleting entries.
 - Today's dashboard.
+- Offline food search, reusable custom foods/favorites and optional Open Food Facts lookup.
+- Persisted gym sessions, routines, repeat workouts and offline exercise photo guides.
+- Optional post-sync Health Connect enrichment and encrypted backups.
 
 Data is stored locally using SQLite. No account is required.
 
@@ -72,7 +75,9 @@ dotnet run --project verification/Persistence/FitAdvisor.PersistenceChecks.cspro
 
 Android APK packaging and automated storage checks have passed. Native UI, offline operation and app restart persistence still require testing on a connected phone or emulator.
 
-Backup and export are not implemented yet. Uninstalling the app or clearing its storage will remove local data.
+Passphrase-encrypted backup/export and restore are available from Backup / Restore. Uninstalling the app or clearing its storage removes local data. Install same-certificate APK updates without uninstalling.
+
+The 0.6.0 phone-feedback update, signed ARM64 APK details, Release emulator evidence and remaining phone checks are documented in [verification](docs/v060-verification.md), [source/licence/privacy notes](docs/v060-sources-and-privacy.md), and the [phone checklist](docs/v060-phone-checklist.md).
 
 ## Documentation
 
@@ -81,7 +86,5 @@ Backup and export are not implemented yet. Uninstalling the app or clearing its 
 
 ## Planned features
 
-- Running and gym workout logging.
-- Device integrations.
-- Data export and backup.
+- Additional device compatibility and reviewed exercise variations.
 - iOS support.

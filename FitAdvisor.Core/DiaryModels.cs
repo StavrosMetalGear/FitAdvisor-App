@@ -34,7 +34,8 @@ public sealed record MealRecord(Guid Id, DateOnly Date, string Name, double Quan
         if (NutritionSnapshot is { } snapshot)
         {
             snapshot.Validate();
-            if (Name != snapshot.Description || Unit != "g" || Quantity != snapshot.Grams ||
+            if(!snapshot.Usable)throw new ArgumentException("Check missing or questionable nutrition against the label before logging.");
+            if (Name != snapshot.Description || Unit != snapshot.Unit || Quantity != snapshot.Grams ||
                 CaloriesKcal != snapshot.Calories || ProteinG != snapshot.Protein || CarbohydratesG != snapshot.Carbs || FatG != snapshot.Fat)
                 throw new ArgumentException("Meal totals must match the saved food nutrition snapshot.");
         }

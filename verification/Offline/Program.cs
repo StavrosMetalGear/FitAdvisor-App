@@ -79,7 +79,7 @@ try
     var dashboard = await diary.GetDashboardAsync(day);
     Check(dashboard.Target!.TargetKcal == 1836 && dashboard.ConsumedKcal == 300, "Workout changed target or allowance");
     var snapshot = await diary.CreateBackupAsync();
-    Check(snapshot.FormatVersion == 5 && snapshot.Workouts.Single(w => w.Id == planned.Id).IsPlanned, "Planned backup format missing");
+    Check(snapshot.FormatVersion == 6 && snapshot.Workouts.Single(w => w.Id == planned.Id).IsPlanned, "Planned backup format missing");
     await Reject(() => diary.RestoreBackupAsync(snapshot with { FormatVersion = 3 }));
     const string pass = "synthetic-long-backup-passphrase";
     var encrypted = BackupCodec.Encrypt(snapshot, pass);
@@ -111,7 +111,7 @@ try
     Sql(path, "DROP TRIGGER reject_restore;");
     // Simulate the exact v1 schema by dropping only the new workout table and resetting its version.
     var upgradePath = Path.Combine(root, "upgrade.db"); var upgrading = new SqlitePersonalDiary(upgradePath);
-    await upgrading.RestoreBackupAsync(preWorkout); Sql(upgradePath, "DROP TABLE gym_sessions; DROP TABLE gym_exercises; DROP TABLE gym_preferences; ALTER TABLE meals DROP COLUMN nutrition_snapshot; DROP TABLE habits; DROP TABLE habit_goals; DROP TABLE habit_settings; DROP TABLE workouts; PRAGMA user_version=1;");
+    await upgrading.RestoreBackupAsync(preWorkout); Sql(upgradePath, "DROP TABLE saved_foods; DROP TABLE gym_routines; DROP TABLE gym_sessions; DROP TABLE gym_exercises; DROP TABLE gym_preferences; ALTER TABLE meals DROP COLUMN nutrition_snapshot; DROP TABLE habits; DROP TABLE habit_goals; DROP TABLE habit_settings; DROP TABLE workouts; PRAGMA user_version=1;");
     var upgraded = await upgrading.CreateBackupAsync();
     Check(upgraded.Meals.SequenceEqual(preWorkout.Meals) && upgraded.Profiles.SequenceEqual(preWorkout.Profiles) && upgraded.Targets.SequenceEqual(preWorkout.Targets), "v1 upgrade lost diary history");
     await upgrading.SaveWorkoutAsync(gym); Check((await upgrading.GetWorkoutsAsync()).Count == 1, "v2 table missing");

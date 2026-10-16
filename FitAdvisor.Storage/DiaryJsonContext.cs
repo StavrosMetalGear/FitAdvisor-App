@@ -4,6 +4,8 @@ namespace FitAdvisor.Storage;
 [JsonSerializable(typeof(ProfileRevision))]
 [JsonSerializable(typeof(DailyTargetSnapshot))]
 [JsonSerializable(typeof(WorkoutRecord))]
+[JsonSerializable(typeof(SavedFood))]
+[JsonSerializable(typeof(GymRoutine))]
 [JsonSerializable(typeof(GymSession))]
 [JsonSerializable(typeof(GymExercise))]
 [JsonSerializable(typeof(GymPreferences))]

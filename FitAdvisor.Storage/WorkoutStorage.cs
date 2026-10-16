@@ -86,6 +86,8 @@ public sealed partial class SqlitePersonalDiary
                 var linked=gymSessions.FirstOrDefault(s=>s.ImportedWorkoutId==record.Id);
                 if(linked!=null && (record.Kind!="gym" || record.StartTime==null || record.StartTime>=linked.FinishedAt || record.StartTime.Value.AddSeconds(record.DurationSeconds)<=linked.StartedAt))
                     throw new ArgumentException("An edited source session is no longer compatible with its Gym Session link. Unlink it before importing this change; nothing was imported.");
+                if(linked?.Enrichment is {} sensor && (sensor.From<record.StartTime || sensor.Through>record.StartTime!.Value.AddSeconds(record.DurationSeconds)))
+                    throw new ArgumentException("Source time change invalidates the sensor snapshot. Unlink and reimport explicitly; existing records retained.");
                 WriteWorkout(db, record, tx); changed++;
             }
             tx.Commit(); return changed;

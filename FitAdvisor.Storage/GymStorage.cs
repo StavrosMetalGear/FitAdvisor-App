@@ -57,6 +57,7 @@ public sealed partial class SqlitePersonalDiary
                 if (imported == null || imported.IsManual || imported.Kind != "gym" || imported.StartTime == null || session.FinishedAt == null ||
                     imported.StartTime >= session.FinishedAt || imported.StartTime.Value.AddSeconds(imported.DurationSeconds) <= session.StartedAt)
                     throw new ArgumentException("Select an overlapping imported strength session.");
+                if(session.Enrichment is {} sensor && (sensor.SourcePackage!=imported.SourcePackage || sensor.From<session.StartedAt || sensor.Through>session.FinishedAt || sensor.From<imported.StartTime || sensor.Through>imported.StartTime.Value.AddSeconds(imported.DurationSeconds))) throw new ArgumentException("Sensor snapshot must use the linked origin and overlapping times.");
                 using var others = Command(db,"SELECT payload FROM gym_sessions WHERE id<>$id",tx,("$id",session.Id.ToString()));
                 using var reader = others.ExecuteReader(); while(reader.Read()) if(ReadJson<GymSession>(reader.GetString(0)).ImportedWorkoutId == importedId) throw new ArgumentException("This import is already linked.");
             }

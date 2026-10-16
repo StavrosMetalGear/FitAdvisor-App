@@ -1,0 +1,10 @@
+# FitAdvisor 0.6.0 — phone checklist
+
+1. Export an encrypted backup in v0.5.0 and retain the passphrase. Install the new APK as an update; do not uninstall or clear storage. Check old meals/snapshots, sets, plans, habits, imports and any active session.
+2. Offline, search Greek/English names with accents and a typo. Explicitly select, enter grams, inspect the preview and save once. Reuse favorites/recent/custom foods. Save a package label per 100 g or explicitly per 100 ml. Editing an old portion must retain its original nutrition and meal identity.
+3. Online, look up the exact ΦΑΓΕ variant and package barcode. Check percentage, size, preparation and g/ml basis. Try an unknown barcode, airplane mode and a slow connection. Missing/flagged values must offer local correction rather than substitute generic food. Typing alone must not perform requests.
+4. Start a gym session once; combine muscle/equipment filters, reorder exercises, log sets, use rest, open/close a guide with both Back controls, lock/force-stop/reopen, then finish/review and optionally rate effort. Repeat: suggestions/order should copy, completion/timers/links should reset. Edit a routine and confirm history and totals stay unchanged.
+5. Record an actual band gym session, sync Mi Fitness, then inspect Health Connect for its Exercise source/times, exercise heart rate and active versus total energy. Import and explicitly link that session. Enable only desired measurements; deny permission first, then grant/retry. Also try a session with no samples. Pixel records must not appear; missing values must be unavailable, coverage explained and food allowance unchanged. Training-effect scores are unavailable through this integration.
+6. Check your keyboard, TalkBack, 200% text, small-screen scrolling and both themes. Export a new backup and validate restore on a separate test install; keep the original until satisfied. Do not restore over your only data copy merely to test.
+
+No physical-device or Mi Fitness export check was performed during implementation. Those results remain pending.

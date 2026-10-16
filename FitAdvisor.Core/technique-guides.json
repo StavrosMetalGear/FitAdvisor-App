@@ -1,0 +1,380 @@
+[
+  {
+    "Id": "bb-squat",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Squat.json",
+    "Frames": [
+      {
+        "Image": "guide_0_0.jpg",
+        "English": "Feet stable; bar on upper back, brace trunk.",
+        "Greek": "Σταθερά πέλματα, μπάρα στην άνω πλάτη, σταθερός κορμός."
+      },
+      {
+        "Image": "guide_0_1.jpg",
+        "English": "Bend hips and knees together; knees follow toes, heels down.",
+        "Greek": "Λύγισε ισχία και γόνατα, γόνατα προς δάχτυλα, φτέρνες κάτω."
+      },
+      {
+        "Image": "guide_0_0.jpg",
+        "English": "Drive through feet and stand; do not lean back.",
+        "Greek": "Πίεσε το έδαφος και στάσου όρθιος χωρίς υπερέκταση."
+      }
+    ]
+  },
+  {
+    "Id": "bw-squat",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Bodyweight_Squat.json",
+    "Frames": [
+      {
+        "Image": "guide_1_0.jpg",
+        "English": "Stand with stable feet; hands behind head as shown without pulling neck.",
+        "Greek": "Σταθερά πέλματα, χέρια πίσω από το κεφάλι χωρίς πίεση στον αυχένα."
+      },
+      {
+        "Image": "guide_1_1.jpg",
+        "English": "Sit hips down and back within comfortable depth; knees follow toes.",
+        "Greek": "Λεκάνη πίσω και κάτω σε άνετο βάθος, γόνατα προς τα δάχτυλα."
+      },
+      {
+        "Image": "guide_1_0.jpg",
+        "English": "Rise with hips and chest together; keep heels planted.",
+        "Greek": "Ανέβασε μαζί ισχία και στήθος, φτέρνες στο έδαφος."
+      }
+    ]
+  },
+  {
+    "Id": "leg-press",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Leg_Press.json",
+    "Frames": [
+      {
+        "Image": "guide_2_0.jpg",
+        "English": "Inclined sled leg press: adjust seat, keep back and pelvis supported; feet on plate.",
+        "Greek": "Κεκλιμένη πρέσα: ρύθμισε κάθισμα, πλάτη και λεκάνη στηριγμένες, πέλματα στην πλατφόρμα."
+      },
+      {
+        "Image": "guide_2_1.jpg",
+        "English": "Bend knees under control; stop before pelvis lifts or knees crowd chest.",
+        "Greek": "Λύγισε ελεγχόμενα, σταμάτησε πριν σηκωθεί η λεκάνη ή πιεστεί το στήθος."
+      },
+      {
+        "Image": "guide_2_0.jpg",
+        "English": "Press platform away without snapping knees straight; use safety stops.",
+        "Greek": "Πίεσε χωρίς απότομο κλείδωμα γονάτων, χρησιμοποίησε ασφάλειες."
+      }
+    ]
+  },
+  {
+    "Id": "leg-extension",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Leg_Extensions.json",
+    "Frames": [
+      {
+        "Image": "guide_3_0.jpg",
+        "English": "Adjust knee axis to machine pivot; shin pad above ankles, back supported.",
+        "Greek": "Άξονας γονάτου στο σημείο περιστροφής, μαξιλάρι πάνω από αστραγάλους, στήριξη πλάτης."
+      },
+      {
+        "Image": "guide_3_1.jpg",
+        "English": "Extend knees smoothly; keep hips down and avoid kicking the pad.",
+        "Greek": "Τέντωσε ομαλά τα γόνατα χωρίς κλωτσιά ή ανύψωση ισχίων."
+      },
+      {
+        "Image": "guide_3_0.jpg",
+        "English": "Lower slowly to the starting bend; do not drop the stack.",
+        "Greek": "Επέστρεψε αργά χωρίς να πέφτουν τα βάρη."
+      }
+    ]
+  },
+  {
+    "Id": "leg-curl",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Leg_Curl.json",
+    "Frames": [
+      {
+        "Image": "guide_4_0.jpg",
+        "English": "Seated curl: align knees with pivot, secure thigh pad; roller behind lower legs.",
+        "Greek": "Καθιστές κάμψεις: γόνατα στον άξονα, στήριγμα μηρών, κύλινδρος πίσω από κνήμες."
+      },
+      {
+        "Image": "guide_4_1.jpg",
+        "English": "Bend knees to draw roller under seat; keep back and hips supported.",
+        "Greek": "Λύγισε γόνατα τραβώντας κάτω από το κάθισμα, πλάτη και ισχία σταθερά."
+      },
+      {
+        "Image": "guide_4_0.jpg",
+        "English": "Return slowly without lifting thighs or dropping the stack.",
+        "Greek": "Επέστρεψε αργά χωρίς να σηκώνονται οι μηροί ή να πέφτουν βάρη."
+      }
+    ]
+  },
+  {
+    "Id": "deadlift",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Deadlift.json",
+    "Frames": [
+      {
+        "Image": "guide_5_0.jpg",
+        "English": "Conventional barbell deadlift: bar over midfoot, grip outside legs; brace.",
+        "Greek": "Συμβατική άρση: μπάρα πάνω από μέσο πέλμα, λαβή έξω από πόδια, σταθερός κορμός."
+      },
+      {
+        "Image": "guide_5_1.jpg",
+        "English": "Push floor away and extend knees and hips; keep bar close, spine steady.",
+        "Greek": "Πίεσε το έδαφος, τέντωσε γόνατα και ισχία με μπάρα κοντά και σταθερή σπονδυλική στήλη."
+      },
+      {
+        "Image": "guide_5_0.jpg",
+        "English": "Hinge hips back, bend knees as bar passes them; set bar down under control.",
+        "Greek": "Ισχία πίσω, λύγισε γόνατα όταν περάσει η μπάρα, άφησε ελεγχόμενα."
+      }
+    ]
+  },
+  {
+    "Id": "bench",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Barbell_Bench_Press_-_Medium_Grip.json",
+    "Frames": [
+      {
+        "Image": "guide_6_0.jpg",
+        "English": "Flat barbell bench, medium overhand grip: feet planted, shoulder blades supported; use spotter/safeties.",
+        "Greek": "Επίπεδος πάγκος, μέτρια πρηνής λαβή: πέλματα κάτω, ωμοπλάτες στηριγμένες, βοηθός/ασφάλειες."
+      },
+      {
+        "Image": "guide_6_1.jpg",
+        "English": "Lower bar toward mid-chest with wrists above elbows; no bounce.",
+        "Greek": "Χαμήλωσε προς μέσο στήθος, καρποί πάνω από αγκώνες, χωρίς αναπήδηση."
+      },
+      {
+        "Image": "guide_6_0.jpg",
+        "English": "Press to start under control; rack securely with spotter if needed.",
+        "Greek": "Πίεσε ελεγχόμενα στην αρχή και τοποθέτησε με ασφάλεια."
+      }
+    ]
+  },
+  {
+    "Id": "db-bench",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Bench_Press.json",
+    "Frames": [
+      {
+        "Image": "guide_7_0.jpg",
+        "English": "Flat bench with one dumbbell in each hand; feet stable, shoulder blades supported.",
+        "Greek": "Επίπεδος πάγκος, ένας αλτήρας ανά χέρι, σταθερά πέλματα και ωμοπλάτες."
+      },
+      {
+        "Image": "guide_7_1.jpg",
+        "English": "Press both dumbbells upward smoothly; keep wrists stacked, no collision.",
+        "Greek": "Πίεσε και τους δύο ομαλά, καρποί σταθεροί, χωρίς σύγκρουση αλτήρων."
+      },
+      {
+        "Image": "guide_7_0.jpg",
+        "English": "Lower both to comfortable chest level; arrange safe assistance for setup/dismount.",
+        "Greek": "Κατέβασε σε άνετο ύψος στήθους, φρόντισε ασφαλή τοποθέτηση και έξοδο."
+      }
+    ]
+  },
+  {
+    "Id": "push-up",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Pushups.json",
+    "Frames": [
+      {
+        "Image": "guide_8_0.jpg",
+        "English": "Floor push-up: hands slightly wider than shoulders, trunk braced, body straight.",
+        "Greek": "Κάμψεις εδάφους: χέρια λίγο πιο ανοιχτά από ώμους, σταθερός κορμός, ευθύ σώμα."
+      },
+      {
+        "Image": "guide_8_1.jpg",
+        "English": "Lower chest with elbows angled back; avoid dropping hips.",
+        "Greek": "Χαμήλωσε στήθος με αγκώνες προς τα πίσω, χωρίς να πέφτουν ισχία."
+      },
+      {
+        "Image": "guide_8_0.jpg",
+        "English": "Press floor away and return as one unit without locking elbows abruptly.",
+        "Greek": "Πίεσε το έδαφος και ανέβα ως ενιαίο σώμα χωρίς απότομο κλείδωμα αγκώνων."
+      }
+    ]
+  },
+  {
+    "Id": "lat-pull",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Wide-Grip_Lat_Pulldown.json",
+    "Frames": [
+      {
+        "Image": "guide_9_0.jpg",
+        "English": "Wide overhand front pulldown: thigh pad secure, feet planted, trunk steady.",
+        "Greek": "Εμπρόσθιες έλξεις με ανοιχτή πρηνή λαβή: στήριγμα μηρών, πέλματα κάτω, κορμός σταθερός."
+      },
+      {
+        "Image": "guide_9_1.jpg",
+        "English": "Pull bar toward upper chest, elbows down; never pull behind neck.",
+        "Greek": "Τράβηξε προς άνω στήθος, αγκώνες κάτω, ποτέ πίσω από αυχένα."
+      },
+      {
+        "Image": "guide_9_0.jpg",
+        "English": "Return overhead under control; no swinging torso or dropping stack.",
+        "Greek": "Επέστρεψε πάνω ελεγχόμενα, χωρίς αιώρηση κορμού ή πτώση βαρών."
+      }
+    ]
+  },
+  {
+    "Id": "row",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Seated_Cable_Rows.json",
+    "Frames": [
+      {
+        "Image": "guide_10_0.jpg",
+        "English": "Seated cable row with close neutral handle: feet braced, knees softly bent.",
+        "Greek": "Καθιστή κωπηλατική με κλειστή ουδέτερη λαβή: πέλματα στηριγμένα, γόνατα ελαφρά λυγισμένα."
+      },
+      {
+        "Image": "guide_10_1.jpg",
+        "English": "Draw handle toward abdomen; keep trunk steady rather than rocking back.",
+        "Greek": "Τράβηξε προς κοιλιά με σταθερό κορμό, χωρίς ταλάντευση προς τα πίσω."
+      },
+      {
+        "Image": "guide_10_0.jpg",
+        "English": "Extend arms smoothly while maintaining spinal position; no weight-stack drop.",
+        "Greek": "Τέντωσε χέρια ομαλά, διατήρησε θέση σπονδυλικής στήλης, χωρίς πτώση βαρών."
+      }
+    ]
+  },
+  {
+    "Id": "pull-up",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Pullups.json",
+    "Frames": [
+      {
+        "Image": "guide_11_0.jpg",
+        "English": "Unweighted overhand pull-up: secure bar and grip, brace trunk.",
+        "Greek": "Μονόζυγο χωρίς πρόσθετο βάρος: ασφαλής μπάρα και πρηνής λαβή, σταθερός κορμός."
+      },
+      {
+        "Image": "guide_11_1.jpg",
+        "English": "Pull upward without kipping; bring chin toward bar within comfortable range.",
+        "Greek": "Τράβηξε πάνω χωρίς αιώρηση, πηγούνι προς μπάρα σε άνετο εύρος."
+      },
+      {
+        "Image": "guide_11_0.jpg",
+        "English": "Lower smoothly; maintain shoulder control, no sudden drop.",
+        "Greek": "Κατέβασε ομαλά με έλεγχο ώμων, χωρίς απότομη πτώση."
+      }
+    ]
+  },
+  {
+    "Id": "db-press",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Shoulder_Press.json",
+    "Frames": [
+      {
+        "Image": "guide_12_0.jpg",
+        "English": "Seated paired dumbbell press with back support; weights near shoulders, feet planted.",
+        "Greek": "Καθιστές πιέσεις με δύο αλτήρες και πλάτη στηριγμένη, βάρη στους ώμους, πέλματα κάτω."
+      },
+      {
+        "Image": "guide_12_1.jpg",
+        "English": "Press both upward without arching lower back; keep forearms under weights.",
+        "Greek": "Πίεσε και τους δύο πάνω χωρίς καμάρα στη μέση, πήχεις κάτω από βάρη."
+      },
+      {
+        "Image": "guide_12_0.jpg",
+        "English": "Lower smoothly to comfortable shoulder height.",
+        "Greek": "Κατέβασε ομαλά σε άνετο ύψος ώμων."
+      }
+    ]
+  },
+  {
+    "Id": "lateral",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Side_Lateral_Raise.json",
+    "Frames": [
+      {
+        "Image": "guide_13_0.jpg",
+        "English": "Standing paired lateral raise: weights at sides, soft knees, slight elbow bend.",
+        "Greek": "Όρθιες πλάγιες άρσεις με δύο αλτήρες στα πλάγια, μαλακά γόνατα, αγκώνες ελαφρά λυγισμένοι."
+      },
+      {
+        "Image": "guide_13_1.jpg",
+        "English": "Raise arms out to sides up to comfortable shoulder height; no shrug or swing.",
+        "Greek": "Σήκωσε πλάγια ως άνετο ύψος ώμων, χωρίς ανασήκωμα ώμων ή αιώρηση."
+      },
+      {
+        "Image": "guide_13_0.jpg",
+        "English": "Lower slowly, keeping the same slight elbow bend.",
+        "Greek": "Κατέβασε αργά διατηρώντας ελαφρά λυγισμένους αγκώνες."
+      }
+    ]
+  },
+  {
+    "Id": "curl",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Dumbbell_Bicep_Curl.json",
+    "Frames": [
+      {
+        "Image": "guide_14_0.jpg",
+        "English": "Standing simultaneous dumbbell curl: palms forward, elbows close to torso.",
+        "Greek": "Όρθιες ταυτόχρονες κάμψεις αλτήρων, παλάμες μπροστά, αγκώνες κοντά στον κορμό."
+      },
+      {
+        "Image": "guide_14_1.jpg",
+        "English": "Bend both elbows together without moving upper arms or leaning back.",
+        "Greek": "Λύγισε μαζί αγκώνες χωρίς κίνηση άνω βραχιόνων ή κλίση πίσω."
+      },
+      {
+        "Image": "guide_14_0.jpg",
+        "English": "Lower both weights slowly; keep wrists steady.",
+        "Greek": "Κατέβασε και τους δύο αργά με σταθερούς καρπούς."
+      }
+    ]
+  },
+  {
+    "Id": "triceps",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Triceps_Pushdown.json",
+    "Frames": [
+      {
+        "Image": "guide_15_0.jpg",
+        "English": "Cable pushdown, straight-bar overhand attachment: elbows at sides, trunk stable.",
+        "Greek": "Πιέσεις τροχαλίας με ίσια μπάρα και πρηνή λαβή, αγκώνες στα πλάγια, σταθερός κορμός."
+      },
+      {
+        "Image": "guide_15_1.jpg",
+        "English": "Extend elbows to bring bar down; avoid pushing with shoulders or body weight.",
+        "Greek": "Τέντωσε αγκώνες προς τα κάτω χωρίς ώθηση με ώμους ή βάρος σώματος."
+      },
+      {
+        "Image": "guide_15_0.jpg",
+        "English": "Return forearms upward slowly while upper arms stay still.",
+        "Greek": "Επέστρεψε πήχεις πάνω αργά με ακίνητους άνω βραχίονες."
+      }
+    ]
+  },
+  {
+    "Id": "plank",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Plank.json",
+    "Frames": [
+      {
+        "Image": "guide_16_1.jpg",
+        "English": "Forearm plank: elbows below shoulders, toes grounded; brace before lifting.",
+        "Greek": "Σανίδα στους πήχεις: αγκώνες κάτω από ώμους, δάχτυλα ποδιών κάτω, σταθερός κορμός."
+      },
+      {
+        "Image": "guide_16_1.jpg",
+        "English": "Hold a straight trunk and breathe normally; do not sag hips or lift them high.",
+        "Greek": "Κράτησε ευθύ κορμό και ανάπνεε, χωρίς πτώση ή υπερβολική ανύψωση ισχίων."
+      },
+      {
+        "Image": "guide_16_1.jpg",
+        "English": "Place knees down gently to finish. The hold photo is repeated, not a moving repetition.",
+        "Greek": "Ακούμπησε απαλά γόνατα για τέλος. Η φωτογραφία στάσης επαναλαμβάνεται, δεν είναι δυναμική επανάληψη."
+      }
+    ]
+  },
+  {
+    "Id": "walk",
+    "Source": "https://github.com/yuhonas/free-exercise-db/blob/main/exercises/Walking_Treadmill.json",
+    "Frames": [
+      {
+        "Image": "guide_17_0.jpg",
+        "English": "Treadmill walking: identify stop control and safety clip; start at low speed.",
+        "Greek": "Περπάτημα διαδρόμου: εντόπισε stop και κλιπ ασφαλείας, ξεκίνα αργά."
+      },
+      {
+        "Image": "guide_17_1.jpg",
+        "English": "Walk upright at a comfortable pace, looking ahead; avoid hanging on rails.",
+        "Greek": "Περπάτα όρθιος με άνετο ρυθμό κοιτώντας μπροστά, χωρίς να κρέμεσαι από χειρολαβές."
+      },
+      {
+        "Image": "guide_17_0.jpg",
+        "English": "Reduce speed, stop belt fully, then step off. Side/rear walking views are repeated for orientation.",
+        "Greek": "Μείωσε ταχύτητα, σταμάτησε πλήρως τον ιμάντα και κατέβα. Οι όψεις βαδίσματος επαναλαμβάνονται για προσανατολισμό."
+      }
+    ]
+  }
+]

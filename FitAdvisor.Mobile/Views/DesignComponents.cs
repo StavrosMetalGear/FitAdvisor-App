@@ -28,7 +28,7 @@ internal static class DesignComponents
     }
     public static Button Secondary(string text)
     {
-        var button = new Button { Text = text, FontSize = 16, Padding = new Thickness(16, 12),
+        var button = new Button { Text = text, LineBreakMode = LineBreakMode.WordWrap, FontSize = 16, Padding = new Thickness(16, 12),
             CornerRadius = 14, MinimumHeightRequest = 52 };
         Theme(button, VisualElement.BackgroundColorProperty, "#E2ECE6", "#2E4538");
         Theme(button, Button.TextColorProperty, "#145E50", "#EDF5F0");

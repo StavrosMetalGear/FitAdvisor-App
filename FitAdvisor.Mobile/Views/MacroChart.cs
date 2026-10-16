@@ -23,10 +23,12 @@ public sealed class MacroChart : VerticalStackLayout
         Spacing = 10;
         Add(new Label { Text = T("Daily macro energy", "Ημερήσια ενέργεια μακροθρεπτικών"), FontSize = 22 });
         Add(chart); Add(legend);
-        Add(new Label { Text = T("Simplified energy: protein 4 kcal/g, carbohydrates 4 kcal/g, fat 9 kcal/g. Percentages refer to macro energy, not gram weight. Macro energy can differ from recorded calories due to rounding, fibre, alcohol or source conventions.", "Απλοποιημένη ενέργεια: πρωτεΐνη 4 kcal/g, υδατάνθρακες 4 kcal/g, λίπος 9 kcal/g. Ποσοστά ενέργειας, όχι βάρους. Διαφορές από τις καταχωρισμένες θερμίδες μπορεί να οφείλονται σε στρογγυλοποίηση, φυτικές ίνες, αλκοόλ ή συμβάσεις της πηγής.") });
-        Add(new Label { Text = T("Optional percentage targets (total 100%)", "Προαιρετικοί στόχοι ποσοστών (σύνολο 100%)") });
+        var options=new VerticalStackLayout {Spacing=10,IsVisible=false};
+        var expand=new Button {Text=T("Macro details & targets","Λεπτομέρειες & στόχοι μακροθρεπτικών")};expand.Clicked+=(_,_)=>options.IsVisible=!options.IsVisible;Add(expand);
+        options.Add(new Label { Text = T("Simplified energy: protein 4 kcal/g, carbohydrates 4 kcal/g, fat 9 kcal/g. Percentages refer to macro energy, not gram weight. Macro energy can differ from recorded calories due to rounding, fibre, alcohol or source conventions.", "Απλοποιημένη ενέργεια: πρωτεΐνη 4 kcal/g, υδατάνθρακες 4 kcal/g, λίπος 9 kcal/g. Ποσοστά ενέργειας, όχι βάρους. Διαφορές από τις καταχωρισμένες θερμίδες μπορεί να οφείλονται σε στρογγυλοποίηση, φυτικές ίνες, αλκοόλ ή συμβάσεις της πηγής.") });
+        options.Add(new Label { Text = T("Optional percentage targets (total 100%)", "Προαιρετικοί στόχοι ποσοστών (σύνολο 100%)") });
         protein.Placeholder = T("Protein %", "Πρωτεΐνη %"); carbs.Placeholder = T("Carbohydrates %", "Υδατάνθρακες %"); fat.Placeholder = T("Fat %", "Λίπος %");
-        foreach (var entry in new[] {protein, carbs, fat}) { SemanticProperties.SetDescription(entry, entry.Placeholder); Add(entry); }
+        foreach (var entry in new[] {protein, carbs, fat}) { SemanticProperties.SetDescription(entry, entry.Placeholder); options.Add(entry); }
         if (Preferences.Default.ContainsKey("macro.protein")) {
             protein.Text = Preferences.Default.Get("macro.protein", 0d).ToString(CultureInfo.CurrentCulture);
             carbs.Text = Preferences.Default.Get("macro.carbs", 0d).ToString(CultureInfo.CurrentCulture);
@@ -43,7 +45,8 @@ public sealed class MacroChart : VerticalStackLayout
         };
         var clear = new Button { Text = T("Clear targets", "Διαγραφή στόχων") };
         clear.Clicked += (_,_) => { foreach (var key in new[] {"macro.protein", "macro.carbs", "macro.fat"}) Preferences.Default.Remove(key); protein.Text = carbs.Text = fat.Text = ""; Update(current); };
-        Add(apply); Add(clear); Add(targetStatus);
+        options.Add(apply); options.Add(clear); options.Add(targetStatus);
+        Add(options);
     }
     public void Update(MacroEnergy value)
     {

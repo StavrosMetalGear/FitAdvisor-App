@@ -12,8 +12,10 @@ public sealed class GymSessionPage : ContentPage
     private GymSession[] history = [];
     private GymExercise[] custom = [];
     private WorkoutRecord[] workouts = [];
+    private GymRoutine[] routines = [];
+    private string? activeExercise;
     private GymPreferences prefs = new();
-    private readonly VerticalStackLayout body = new() { Padding = 20, Spacing = 12 };
+    private readonly VerticalStackLayout body = new() { Padding = 16, Spacing = 10 };
     private readonly Label clock = new() { FontSize = 20 };
     private readonly Label restLabel = new() { FontSize = 18 };
     private readonly Label status = new();
@@ -28,12 +30,12 @@ public sealed class GymSessionPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing(); await Run(async () => {
-            history = await diary.GetGymSessionsAsync(); custom = await diary.GetCustomExercisesAsync(); prefs = await diary.GetGymPreferencesAsync();
+            routines = await diary.GetGymRoutinesAsync(); history = await diary.GetGymSessionsAsync(); custom = await diary.GetCustomExercisesAsync(); prefs = await diary.GetGymPreferencesAsync();
             workouts = (await diary.GetWorkoutsAsync()).ToArray();
             if (!loaded || session?.Status == "active") session = history.SingleOrDefault(s => s.Status == "active");
             else if(session!=null)session=history.FirstOrDefault(s=>s.Id==session.Id);
             loaded = true; Render();
-            if (session?.Status == "active") status.Text = "Recovered saved session / Ανάκτηση αποθηκευμένης συνεδρίας. Running time includes time away; pause when resting the session.";
+            if (session?.Status == "active") status.Text = L("Saved session recovered. Pause when needed.","Ανακτήθηκε η συνεδρία. Κάνε παύση όποτε χρειάζεται.");
         }); ticker.Start();
     }
     protected override void OnDisappearing() { ticker.Stop(); base.OnDisappearing(); }
@@ -84,36 +86,50 @@ public sealed class GymSessionPage : ContentPage
     }
     private void Render()
     {
-        body.Clear(); body.Add(new Label { Text = Title, FontSize = 26 }); body.Add(status); status.Text = "";
-        body.Add(DesignComponents.Caption(L("Manual logging, saved after every action. No live Mi Band monitoring. Heart rate and calories unavailable. Food allowance is unchanged.","Χειροκίνητη καταγραφή, αποθήκευση μετά από κάθε ενέργεια. Χωρίς ζωντανή παρακολούθηση Mi Band. Σφυγμοί και θερμίδες μη διαθέσιμα. Η διατροφή δεν αλλάζει.")));
-        body.Add(Button(L("Preferences / Rest timer","Προτιμήσεις / Διάλειμμα"), PreferencesDialog));
+        body.Clear(); body.Add(status); status.Text = "";
         if (session == null) {
+            var latest=history.Where(s=>s.Status=="finished").OrderByDescending(s=>s.StartedAt).FirstOrDefault();
+            if(latest!=null)body.Add(Button(L("Repeat previous workout","Επανάληψη προηγούμενης προπόνησης"),async()=>await Store(GymRoutine.From(latest,latest.Title).Start(DateTimeOffset.UtcNow))));
+            foreach(var routine in routines) {
+                body.Add(Button(L("Start routine: ","Έναρξη ρουτίνας: ")+routine.Title,async()=>await Store(routine.Start(DateTimeOffset.UtcNow))));
+                body.Add(Button(L("Edit routine: ","Επεξεργασία ρουτίνας: ")+routine.Title,()=>EditRoutine(routine)));
+            }
             body.Add(Button(L("Start session","Έναρξη συνεδρίας"), async () => {
                 var title = await DisplayPromptAsync(L("Session","Συνεδρία"), L("Session title","Τίτλος συνεδρίας"), initialValue: "Gym Session"); if(title == null) return;
                 var now = DateTimeOffset.UtcNow; await Store(new(Guid.NewGuid(),title,now,new(0,now),[],[]));
             },"GymStart"));
         } else {
-            body.Add(new Label { Text = session.Title, FontSize = 22 }); body.Add(clock);
+            body.Add(new Label { Text = session.Title + (session.Effort is {} effort ? $" · Effort / Προσπάθεια {effort}/10 (subjective)" : ""), FontSize = 22 }); body.Add(clock);
             if(session.Status == "active") {
                 body.Add(Button(session.Clock.RunningSince == null ? L("Resume session","Συνέχεια συνεδρίας") : L("Pause session","Παύση συνεδρίας"), async () => await Store(session with { Clock = session.Clock.RunningSince == null ? session.Clock.Resume(DateTimeOffset.UtcNow) : session.Clock.Pause(DateTimeOffset.UtcNow) }),"GymPause"));
                 body.Add(Button(L("Add exercise","Προσθήκη άσκησης"), AddExercise,"GymAddExercise"));
-                body.Add(Button(L("Custom exercise","Προσαρμοσμένη άσκηση"), CustomExercise));
+
                 if (prefs.RestEnabled) RenderRest();
             }
-            foreach(var e in session.Exercises) RenderExercise(e);
+
+            if(session.Exercises.Length>0 && !session.Exercises.Any(e=>e.Id==activeExercise))activeExercise=session.Exercises[0].Id;
+            foreach(var e in session.Exercises) {
+                body.Add(Button((e.Id==activeExercise?"▶ ":"")+e.English+" / "+e.Greek,()=>{activeExercise=e.Id;Render();return Task.CompletedTask;}));
+                if(e.Id==activeExercise)RenderExercise(e);
+            }
+            if(session.Exercises.Length>0)body.Add(Button(L("Save as reusable routine","Αποθήκευση ως ρουτίνα"),async()=>{var title=await DisplayPromptAsync("Routine / Ρουτίνα","Name / Όνομα",initialValue:session.Title);if(title==null)return;await diary.SaveGymRoutineAsync(GymRoutine.From(session,title));routines=await diary.GetGymRoutinesAsync();status.Text="Routine saved / Αποθηκεύτηκε";}));
             body.Add(DesignComponents.Caption($"{L("Working external-load volume","Όγκος κύριων σετ εξωτερικού φορτίου")}: {session.Volume:g} kg·reps. " + L("Loaded reps only, no warm-ups/bodyweight/added/assistance. Paired dumbbells count twice per rep; not comparable across exercises or machines.","Μόνο φορτισμένες επαναλήψεις, χωρίς προθέρμανση/σωματικό βάρος/πρόσθετο/υποβοήθηση. Ζεύγος αλτήρων μετρά διπλά ανά επανάληψη· όχι σύγκριση μεταξύ ασκήσεων ή μηχανημάτων.")));
             if(session.Status == "active") {
                 body.Add(Button(L("Finish & review","Ολοκλήρωση & ανασκόπηση"), Finish,"GymFinish"));
                 body.Add(Button(L("Cancel session","Ακύρωση συνεδρίας"), async () => { if(await DisplayAlertAsync(L("Cancel session?","Ακύρωση συνεδρίας;"),L("Saved sets remain in a cancelled session, excluded from totals and records.","Τα σετ διατηρούνται ως ακυρωμένα, εκτός συνόλων και ρεκόρ."),L("Cancel session","Ακύρωση"),L("Keep session","Διατήρηση"))) await Store(session with {Status="cancelled", Clock=session.Clock.Pause(DateTimeOffset.UtcNow), Rest=null}); }));
             } else {
-                body.Add(Button(session.Status=="cancelled"?L("Resume cancelled session","Ανάκτηση ακυρωμένης συνεδρίας"):L("Undo finish / resume","Αναίρεση ολοκλήρωσης / συνέχεια"), async () => { if(await DisplayAlertAsync(L("Resume session?","Συνέχεια συνεδρίας;"),L("Remove any completed workout total and resume these saved sets?","Αφαίρεση τυχόν ολοκληρωμένου συνόλου και συνέχεια αποθηκευμένων σετ;"),L("Resume","Συνέχεια"),L("Back","Πίσω"))) await Store(session with {Status="active", FinishedAt=null, ImportedWorkoutId=null, Clock=session.Clock.Resume(DateTimeOffset.UtcNow)}); }));
+                body.Add(Button(session.Status=="cancelled"?L("Resume cancelled session","Ανάκτηση ακυρωμένης συνεδρίας"):L("Undo finish / resume","Αναίρεση ολοκλήρωσης / συνέχεια"), async () => { if(await DisplayAlertAsync(L("Resume session?","Συνέχεια συνεδρίας;"),L("Remove any completed workout total and resume these saved sets?","Αφαίρεση τυχόν ολοκληρωμένου συνόλου και συνέχεια αποθηκευμένων σετ;"),L("Resume","Συνέχεια"),L("Back","Πίσω"))) await Store(session with {Status="active", FinishedAt=null, ImportedWorkoutId=null, Enrichment=null, Clock=session.Clock.Resume(DateTimeOffset.UtcNow)}); }));
                 if(session.Status=="finished")body.Add(Button(L("Link imported strength session","Σύνδεση εισαγόμενης προπόνησης"), LinkImport));
                 if(session.ImportedWorkoutId is {} linked && workouts.FirstOrDefault(w=>w.Id==linked) is {} imported)
                     body.Add(new Label {Text=$"Linked / Συνδεδεμένο: {imported.SourcePackage} · {imported.StartTime?.ToLocalTime():g} · {imported.DurationSeconds/60:g} min · Health Connect; one workout total."});
-                if(session.ImportedWorkoutId != null) body.Add(Button(L("Unlink import","Αποσύνδεση εισαγωγής"),async()=> await Store(session with {ImportedWorkoutId=null})));
+                if(session.Enrichment is {} sensor)body.Add(new Label {Text=sensor.Summary});
+                if(session.ImportedWorkoutId != null)body.Add(Button(L("Read optional synced measurements","Ανάγνωση προαιρετικών συγχρονισμένων μετρήσεων"),SensorDialog));
+                if(session.ImportedWorkoutId != null) body.Add(Button(L("Unlink import","Αποσύνδεση εισαγωγής"),async()=> await Store(session with {ImportedWorkoutId=null,Enrichment=null})));
                 body.Add(Button(L("Back to new session","Νέα συνεδρία"), () => { session=null; Render(); return Task.CompletedTask; }));
             }
         }
+        body.Add(Button(L("Preferences / Rest timer","Προτιμήσεις / Διάλειμμα"), PreferencesDialog));
+        if(session?.Status=="active")body.Add(Button(L("Custom exercise","Προσαρμοσμένη άσκηση"), CustomExercise));
         body.Add(new Label {Text=L("Session history & trends","Ιστορικό & τάσεις"),FontSize=22});
         foreach(var s in history.OrderByDescending(s=>s.StartedAt).Take(30)) {
             body.Add(Button($"{s.StartedAt.ToLocalTime():g} · {s.Title} · {s.Status} · {s.Sets.Count(x=>x.Completed)} sets · {s.Volume:g} kg·reps", () => {session=s;Render();return Task.CompletedTask;}));
@@ -123,36 +139,43 @@ public sealed class GymSessionPage : ContentPage
     private void RenderExercise(GymExercise e)
     {
         var card = new VerticalStackLayout {Spacing=10}; card.Add(new Label {Text=e.Display,FontSize=20});
+        var details=new VerticalStackLayout {Spacing=8,IsVisible=false};
+        if(session!.Status=="active") {
+            details.Add(Button(L("Move exercise earlier","Μετακίνηση νωρίτερα"),async()=>{var order=session.Exercises.ToArray();var index=Array.FindIndex(order,x=>x.Id==e.Id);if(index>0){(order[index-1],order[index])=(order[index],order[index-1]);await Store(session with {Exercises=order});}}));
+            details.Add(Button(L("Move exercise later","Μετακίνηση αργότερα"),async()=>{var order=session.Exercises.ToArray();var index=Array.FindIndex(order,x=>x.Id==e.Id);if(index<order.Length-1){(order[index+1],order[index])=(order[index],order[index+1]);await Store(session with {Exercises=order});}}));
+        }
         var previous=history.Where(s=>s.Status=="finished" && s.Id!=session!.Id).OrderByDescending(s=>s.StartedAt).FirstOrDefault(s=>s.Exercises.Any(x=>x.Key==e.Key));
-        card.Add(DesignComponents.Caption(previous==null ? L("Previous: none","Προηγούμενα: κανένα") : $"{L("Previous","Προηγούμενα")} {previous.StartedAt.ToLocalTime():d}: " + string.Join("; ",previous.Sets.Where(s=>s.ExerciseId==e.Id && s.Completed).Select(s=>s.Summary(e)))));
-        card.Add(DesignComponents.Caption(GymRecords.Describe(history.Where(s=>s.Id!=session!.Id),e)));
+        details.Add(DesignComponents.Caption(previous==null ? L("Previous: none","Προηγούμενα: κανένα") : $"{L("Previous","Προηγούμενα")} {previous.StartedAt.ToLocalTime():d}: " + string.Join("; ",previous.Sets.Where(s=>s.ExerciseId==e.Id && s.Completed).Select(s=>s.Summary(e)))));
+        details.Add(DesignComponents.Caption(GymRecords.Describe(history.Where(s=>s.Id!=session!.Id),e)));
         var trend=history.Where(s=>s.Id!=session!.Id && s.Status=="finished" && s.Exercises.Any(x=>x.Key==e.Key)).OrderBy(s=>s.StartedAt).TakeLast(5).ToArray();
         if(trend.Length>0) {
-            card.Add(new Label {Text=L("Recent working-set trend (oldest → newest)","Τάση κύριων σετ (παλιότερο → νεότερο)")});
+            details.Add(new Label {Text=L("Recent working-set trend (oldest → newest)","Τάση κύριων σετ (παλιότερο → νεότερο)")});
             foreach(var past in trend) {
                 var relevant=past.Sets.Where(s=>s.ExerciseId==e.Id && s.Completed && !s.Warmup).ToArray();
-                card.Add(DesignComponents.Caption($"{past.StartedAt.ToLocalTime():d}: "+string.Join("; ",relevant.Select(s=>s.Summary(e)))));
+                details.Add(DesignComponents.Caption($"{past.StartedAt.ToLocalTime():d}: "+string.Join("; ",relevant.Select(s=>s.Summary(e)))));
             }
         }
+        if(session!.Status=="active")card.Add(Button(L("Log completed set","Καταγραφή ολοκληρωμένου σετ"),()=>EditSet(e,null)));
         if(!prefs.HideTechnique) card.Add(Button(L("Exercise technique","Τεχνική άσκησης"), ()=>Technique(e)));
         foreach(var set in session!.Sets.Where(s=>s.ExerciseId==e.Id)) {
             card.Add(new Label {Text=set.Summary(e)});
-            card.Add(Button(L("Edit set","Επεξεργασία σετ"),()=>EditSet(e,set)));
+            details.Add(Button(L("Edit set","Επεξεργασία σετ")+" · "+set.Summary(e),()=>EditSet(e,set)));
             card.Add(Button(set.Completed ? L("Undo set completion","Αναίρεση ολοκλήρωσης σετ") : L("Complete set","Ολοκλήρωση σετ"),async()=> {
                 var nextRest=session.Rest;
                 if(!set.Completed && session.Status=="active" && prefs.RestEnabled && prefs.AutoRest){nextRest=new(true,e.RestSeconds??prefs.DefaultRestSeconds,new(0,DateTimeOffset.UtcNow));alerted=false;}
                 await Store(session with {Sets=session.Sets.Select(s=>s.Id==set.Id?s with {Completed=!s.Completed}:s).ToArray(),Rest=nextRest});
             }));
-            card.Add(Button(L("Delete set","Διαγραφή σετ"),async()=> { if(await DisplayAlertAsync(L("Delete set?","Διαγραφή σετ;"),set.Summary(e),L("Delete","Διαγραφή"),L("Keep","Διατήρηση"))) await Store(session with {Sets=session.Sets.Where(s=>s.Id!=set.Id).ToArray()}); }));
+            details.Add(Button(L("Delete set","Διαγραφή σετ")+" · "+set.Summary(e),async()=> { if(await DisplayAlertAsync(L("Delete set?","Διαγραφή σετ;"),set.Summary(e),L("Delete","Διαγραφή"),L("Keep","Διατήρηση"))) await Store(session with {Sets=session.Sets.Where(s=>s.Id!=set.Id).ToArray()}); }));
         }
         if(session.Status=="active") {
-            card.Add(Button(L("Log completed set","Καταγραφή ολοκληρωμένου σετ"),()=>EditSet(e,null)));
-            card.Add(Button(L("Exercise rest override","Διάλειμμα άσκησης"),async()=> {
+
+            details.Add(Button(L("Exercise rest override","Διάλειμμα άσκησης"),async()=> {
                 var text=await DisplayPromptAsync(L("Rest override","Διάλειμμα άσκησης"),L("Seconds, 5–3600 (blank uses default)","Δευτερόλεπτα, 5–3600 (κενό = προεπιλογή)"),initialValue:e.RestSeconds?.ToString(),keyboard:Keyboard.Numeric);
                 if(text==null)return; int? seconds=string.IsNullOrWhiteSpace(text)?null:(int)Number(text);
                 await Store(session with {Exercises=session.Exercises.Select(x=>x.Id==e.Id?x with {RestSeconds=seconds}:x).ToArray()});
             }));
         }
+        card.Add(Button(L("Edit sets, reorder & history","Επεξεργασία σετ, σειρά & ιστορικό"),()=>{details.IsVisible=!details.IsVisible;return Task.CompletedTask;}));card.Add(details);
         body.Add(DesignComponents.Card(card));
     }
     private static double Number(string? text) => double.TryParse(text,NumberStyles.Float,CultureInfo.CurrentCulture,out var n) && double.IsFinite(n) ? n : throw new ArgumentException("Enter a valid number / Έγκυρος αριθμός");
@@ -176,11 +199,7 @@ public sealed class GymSessionPage : ContentPage
     }
     private async Task AddExercise()
     {
-        var query=await DisplayPromptAsync(L("Offline starter catalogue","Αρχικός κατάλογος εκτός σύνδεσης"),L("Search English/Greek name, muscle or equipment (blank = all). This is not every exercise.","Αναζήτηση ονόματος, μυών ή εξοπλισμού (κενό = όλα). Δεν περιέχει κάθε άσκηση.")); if(query==null)return;
-        var options=GymCatalogue.Starter.Concat(custom).Where(e=>GymCatalogue.Matches(e,query) && !session!.Exercises.Any(x=>x.Id==e.Id)).OrderBy(e=>e.Muscle).ThenBy(e=>e.English).ToArray();
-        if(options.Length==0) {status.Text=L("No match; try another search or create a custom exercise.","Χωρίς αποτέλεσμα· άλλη αναζήτηση ή προσαρμοσμένη άσκηση.");return;}
-        var choice=await DisplayActionSheetAsync(L("Choose exact variation","Επίλεξε ακριβή παραλλαγή"),L("Back","Πίσω"),null,options.Select(e=>e.Display).ToArray());
-        var selected=options.FirstOrDefault(e=>e.Display==choice);
+        await Navigation.PushAsync(new ExercisePickerPage(GymCatalogue.Starter.Concat(custom).Where(e=>!session!.Exercises.Any(x=>x.Id==e.Id)).ToArray(), async selected => {
         if(selected!=null && !selected.Custom && selected.Convention=="machine") {
             var machine=await DisplayPromptAsync(L("Identify this machine","Ταυτότητα μηχανήματος"),L("Enter gym + machine/model identifier. Records must use the same machine; select this saved variation next time.","Γράψε γυμναστήριο + ταυτότητα/μοντέλο μηχανήματος. Σύγκρινε μόνο το ίδιο μηχάνημα· διάλεξε αυτή την παραλλαγή την επόμενη φορά."));
             if(machine==null)return;DiaryValidation.Text(machine,70,"Machine identity");
@@ -190,6 +209,38 @@ public sealed class GymSessionPage : ContentPage
             if(saved==null){await diary.SaveCustomExerciseAsync(selected);custom=await diary.GetCustomExercisesAsync();}
         }
         if(selected!=null && !session!.Exercises.Any(e=>e.Id==selected.Id))await Store(session! with {Exercises=session!.Exercises.Append(selected).ToArray()});
+            }));
+    }
+    private async Task EditRoutine(GymRoutine routine)
+    {
+        var draft=routine;var page=new ContentPage {Title="Edit routine / Ρουτίνα"};var stack=new VerticalStackLayout {Padding=16,Spacing=10};var error=new Label();
+        void RenderDraft() {
+            stack.Clear();stack.Add(error);
+            var title=new Entry {Text=draft.Title};title.TextChanged+=(_,_)=>draft=draft with {Title=title.Text??""};stack.Add(title);
+            Button Local(string text,Func<Task> action) {var b=new Button {Text=text};b.Clicked+=async(_,_)=>{try{await action();}catch(ArgumentException e){error.Text=e.Message;}};return b;}
+            foreach(var exercise in draft.Exercises) {
+                stack.Add(new Label {Text=exercise.Display});
+                stack.Add(Local("Move earlier / Νωρίτερα",()=>{var order=draft.Exercises.ToArray();var i=Array.FindIndex(order,e=>e.Id==exercise.Id);if(i>0)(order[i-1],order[i])=(order[i],order[i-1]);draft=draft with {Exercises=order};RenderDraft();return Task.CompletedTask;}));
+                stack.Add(Local("Remove / Αφαίρεση",()=>{draft=draft with {Exercises=draft.Exercises.Where(e=>e.Id!=exercise.Id).ToArray(),Sets=draft.Sets.Where(s=>s.ExerciseId!=exercise.Id).ToArray()};RenderDraft();return Task.CompletedTask;}));
+                stack.Add(Local("Add suggested set / Προτεινόμενο σετ",()=>{
+                    var repMode=exercise.Mode is "load" or "body" or "added" or "assistance";var loadMode=exercise.Mode is "load" or "added" or "assistance";
+                    draft=draft with {Sets=draft.Sets.Append(new GymSet(Guid.NewGuid(),exercise.Id,repMode?8:null,loadMode?0:null,exercise.Mode=="duration"?60:null,exercise.Mode=="distance"?500:null,false,false)).ToArray()};RenderDraft();return Task.CompletedTask;
+                }));
+                foreach(var set in draft.Sets.Where(s=>s.ExerciseId==exercise.Id)) {
+                    stack.Add(Local(set.Summary(exercise)+" · Edit suggestion",async()=>{
+                        var reps=set.Reps;var load=set.LoadKg;var seconds=set.Seconds;var distance=set.DistanceM;
+                        if(reps!=null){var text=await page.DisplayPromptAsync("Suggested reps","Whole number",initialValue:reps.ToString(),keyboard:Keyboard.Numeric);if(text==null)return;reps=int.TryParse(text,out var r)?r:throw new ArgumentException("Whole reps required");}
+                        if(load!=null){var text=await page.DisplayPromptAsync("Suggested kg",exercise.LoadLabel,initialValue:load.ToString(),keyboard:Keyboard.Numeric);if(text==null)return;load=Number(text);}
+                        if(seconds!=null){var text=await page.DisplayPromptAsync("Suggested seconds","Duration",initialValue:seconds.ToString(),keyboard:Keyboard.Numeric);if(text==null)return;seconds=Number(text);}
+                        if(distance!=null){var text=await page.DisplayPromptAsync("Suggested metres","Distance",initialValue:distance.ToString(),keyboard:Keyboard.Numeric);if(text==null)return;distance=Number(text);}
+                        draft=draft with {Sets=draft.Sets.Select(s=>s.Id==set.Id?s with {Reps=reps,LoadKg=load,Seconds=seconds,DistanceM=distance}:s).ToArray()};draft.Validate();RenderDraft();
+                    }));
+                }
+            }
+            stack.Add(Local("Add exercise / Προσθήκη άσκησης",async()=>await Navigation.PushAsync(new ExercisePickerPage(GymCatalogue.Starter.Concat(custom).Where(e=>!draft.Exercises.Any(x=>x.Id==e.Id)).ToArray(),e=>{draft=draft with {Exercises=draft.Exercises.Append(e).ToArray()};RenderDraft();return Task.CompletedTask;}))));
+            stack.Add(Local("Save routine / Αποθήκευση",async()=>{await diary.SaveGymRoutineAsync(draft);routines=await diary.GetGymRoutinesAsync();await Navigation.PopAsync();Render();}));
+        }
+        RenderDraft();page.Content=new ScrollView {Content=stack};await Navigation.PushAsync(page);
     }
     private async Task CustomExercise()
     {
@@ -213,7 +264,9 @@ public sealed class GymSessionPage : ContentPage
         if(!session!.Sets.Any(s=>s.Completed))throw new ArgumentException("Complete at least one set / Ολοκλήρωσε τουλάχιστον ένα σετ");
         var summary=string.Join("\n",session.Exercises.Select(e=>e.English+": "+session.Sets.Count(s=>s.ExerciseId==e.Id&&s.Completed)+" completed sets"));
         if(!await DisplayAlertAsync(L("Review session","Ανασκόπηση συνεδρίας"),summary+$"\n{session.Volume:g} kg·reps. Pending sets excluded. One completed workout entry.",L("Finish","Ολοκλήρωση"),L("Keep logging","Συνέχεια")))return;
-        var now=DateTimeOffset.UtcNow;await Store(session with {Status="finished",FinishedAt=now,Clock=session.Clock.Pause(now),Rest=null});
+        var effortText=await DisplayPromptAsync(L("Optional session effort 1–10","Προαιρετική προσπάθεια 1–10"),L("1 very easy · 3 moderate · 5 hard · 7 very hard · 10 maximal. Subjective, separate from sensor measurements. Leave blank to skip.","1 πολύ εύκολη · 3 μέτρια · 5 δύσκολη · 7 πολύ δύσκολη · 10 μέγιστη. Υποκειμενική, ανεξάρτητη από αισθητήρες. Κενό = παράλειψη."),keyboard:Keyboard.Numeric);
+        int? effort=string.IsNullOrWhiteSpace(effortText)?null:int.TryParse(effortText,out var rating)&&rating>=1&&rating<=10?rating:throw new ArgumentException("Effort must be 1–10.");
+        var now=DateTimeOffset.UtcNow;await Store(session with {Effort=effort,Status="finished",FinishedAt=now,Clock=session.Clock.Pause(now),Rest=null});
         status.Text=L("Session saved. Review sets below; you can undo completion.","Η συνεδρία αποθηκεύτηκε. Έλεγξε τα σετ· μπορείς να αναιρέσεις την ολοκλήρωση.");
     }
     private void RenderRest()
@@ -251,13 +304,34 @@ public sealed class GymSessionPage : ContentPage
         stack.Add(new Label {Text=L("Controlled movement and appropriate resistance. Stop if an exercise causes pain. Ask a qualified trainer to check your form.","Ελεγχόμενη κίνηση και κατάλληλη αντίσταση. Σταμάτησε αν η άσκηση προκαλεί πόνο. Ζήτησε έλεγχο τεχνικής από καταρτισμένο προπονητή."),FontSize=18});
         if(guide==null)stack.Add(new Label {Text=L("Reviewed guidance is unavailable for this exact exercise/equipment variation. No technique instructions supplied.","Δεν υπάρχει ελεγμένη καθοδήγηση για αυτή την ακριβή άσκηση/εξοπλισμό. Δεν παρέχονται οδηγίες τεχνικής."),FontSize=18});
         else {
-            stack.Add(new Label {Text=AppearancePreferences.Language==1?guide.Greek:guide.English,FontSize=18,LineBreakMode=LineBreakMode.WordWrap});
-            var image=new Image {Source=guide.Illustration,HeightRequest=220,Aspect=Aspect.AspectFit};SemanticProperties.SetDescription(image,L("Schematic start and lowered positions; written guidance provides the details.","Σχηματική αρχική και χαμηλή θέση· λεπτομέρειες στις γραπτές οδηγίες."));stack.Add(image);
-            stack.Add(DesignComponents.Caption("Original FitAdvisor schematic, CC0-1.0. Source-checked paraphrase, 2026-10-14; not a clinical review. ACE/NASM source media are not bundled. Breathing/safety cues include FitAdvisor general guidance."));
+            string[] labels=[L("1 · Setup","1 · Στήσιμο"),L("2 · Movement / hold","2 · Κίνηση / κράτημα"),L("3 · Return / finish","3 · Επιστροφή / τέλος")];
+            for(var i=0;i<guide.Frames.Length;i++) {
+                var frame=guide.Frames[i];var cue=AppearancePreferences.Language==1?frame.Greek:frame.English;
+                stack.Add(new Label {Text=labels[i],FontSize=22,FontAttributes=FontAttributes.Bold});
+                var image=new Image {Source=frame.Image,HeightRequest=240,Aspect=Aspect.AspectFit};SemanticProperties.SetDescription(image,e.Display+". "+labels[i]+". "+cue);stack.Add(image);stack.Add(new Label {Text=cue,FontSize=18});
+            }
+            stack.Add(DesignComponents.Caption(L("Source-checked photo sequence, 2026-10-16; not a clinical or trainer assessment. Public-domain/Unlicense: Free Exercise DB (Yuhonas / original dataset Ollie Jennings). Return frames reuse the setup pose; plank uses the hold photo. Machine geometry varies: use only the shown variation. Breathe continuously; stop if painful.","Φωτογραφίες ελεγμένες ως προς την πηγή, 16/10/2026· όχι κλινική αξιολόγηση ή αξιολόγηση προπονητή. Public domain/Unlicense: Free Exercise DB (Yuhonas / αρχικό σύνολο Ollie Jennings). Η επιστροφή επαναχρησιμοποιεί την αρχική θέση· η σανίδα τη στάση κρατήματος. Τα μηχανήματα διαφέρουν: μόνο η εικονιζόμενη παραλλαγή. Συνέχισε να αναπνέεις· σταμάτησε αν πονάς.")));
             var link=DesignComponents.Secondary(L("Source (online)","Πηγή (σύνδεση)"));link.Clicked+=async(_,_)=>await Launcher.Default.OpenAsync(guide.Source);stack.Add(link);
             if(guide.Video!=null) {var video=DesignComponents.Secondary(L("NASM video (online, optional)","Βίντεο NASM (προαιρετικό, σύνδεση)"));video.Clicked+=async(_,_)=>await Launcher.Default.OpenAsync(guide.Video);stack.Add(video);}
         }
         var back=DesignComponents.Secondary(L("Back to session","Πίσω στη συνεδρία"));back.Clicked+=async(_,_)=>await Navigation.PopAsync();stack.Add(back);page.Content=new ScrollView {Content=stack};await Navigation.PushAsync(page);
+    }
+    private async Task SensorDialog()
+    {
+        var imported=(await diary.GetWorkoutsAsync()).FirstOrDefault(w=>w.Id==session!.ImportedWorkoutId)??throw new ArgumentException("Linked import unavailable.");
+        var page=new ContentPage {Title="Post-sync measurements / Μετρήσεις"};var stack=new VerticalStackLayout {Padding=16,Spacing=12};
+        stack.Add(new Label {Text=$"Record on band → sync Mi Fitness → import Exercise session → explicitly link → read. Exact source: {imported.SourcePackage}. Only overlapping times from this source; no competing sources merged. Missing values are unavailable. Food allowance never increases."});
+        var heart=new Switch();SemanticProperties.SetDescription(heart,"Enable heart-rate read / Σφυγμοί");stack.Add(new Label {Text="Heart rate / Σφυγμοί (optional)"});stack.Add(heart);
+        var energy=new Switch();SemanticProperties.SetDescription(energy,"Enable active-calorie read / Ενεργές θερμίδες");stack.Add(new Label {Text="Active energy / Ενεργές θερμίδες (optional; excludes resting energy)"});stack.Add(energy);
+        var message=new Label();var read=new Button {Text="Read enabled measurements / Ανάγνωση επιλεγμένων"};stack.Add(read);stack.Add(message);
+        read.Clicked+=async(_,_)=>{read.IsEnabled=false;try {
+#if ANDROID
+            var snapshot=await AndroidGymEnrichmentReader.ReadAsync(session!,imported,heart.IsToggled,energy.IsToggled);await Store(session! with {Enrichment=snapshot});message.Text=snapshot.Summary;
+#else
+            message.Text="Health Connect requires Android.";
+#endif
+        }catch(Exception e){message.Text=e is ArgumentException?e.Message:"Measurements unavailable. Check permission and sync, then retry. Existing snapshot retained.";}finally{read.IsEnabled=true;}};
+        var back=new Button {Text="Back to session / Πίσω"};back.Clicked+=async(_,_)=>await Navigation.PopAsync();stack.Add(back);page.Content=new ScrollView {Content=stack};await Navigation.PushAsync(page);
     }
     private async Task LinkImport()
     {
@@ -265,6 +339,6 @@ public sealed class GymSessionPage : ContentPage
         if(imports.Length==0) {status.Text=L("No compatible overlapping imported strength session. Import completed sessions from Workouts first.","Δεν υπάρχει συμβατή εισαγόμενη προπόνηση δύναμης με χρονική επικάλυψη. Κάνε εισαγωγή ολοκληρωμένων συνεδριών από Προπονήσεις.");return;}
         string Label(WorkoutRecord w)=>$"{w.SourcePackage} · {w.StartTime!.Value.ToLocalTime():g} · {w.DurationSeconds/60:g} min · {w.ExternalId}";
         var choice=await DisplayActionSheetAsync(L("Explicitly link import","Ρητή σύνδεση εισαγωγής"),L("Back","Πίσω"),null,imports.Select(Label).ToArray());var selected=imports.FirstOrDefault(w=>Label(w)==choice);if(selected==null)return;
-        if(await DisplayAlertAsync(L("Link this completed import?","Σύνδεση ολοκληρωμένης εισαγωγής;"),Label(selected)+L("\nIts workout total will be counted through this manual session once. No live monitoring, heart rate or calories.","\nΜετρά μία φορά μέσω της χειροκίνητης συνεδρίας. Χωρίς ζωντανή παρακολούθηση, σφυγμούς ή θερμίδες."),L("Link","Σύνδεση"),L("Back","Πίσω"))) {await Store(session! with {ImportedWorkoutId=selected.Id});status.Text="Linked: "+Label(selected);}
+        if(await DisplayAlertAsync(L("Link this completed import?","Σύνδεση ολοκληρωμένης εισαγωγής;"),Label(selected)+L("\nIts workout total will be counted through this manual session once. Optional heart rate and active energy can be read after linking; no live monitoring.","\nΜετρά μία φορά μέσω της χειροκίνητης συνεδρίας. Προαιρετική ανάγνωση σφυγμών και ενεργών θερμίδων μετά τη σύνδεση, χωρίς ζωντανή παρακολούθηση."),L("Link","Σύνδεση"),L("Back","Πίσω"))) {await Store(session! with {ImportedWorkoutId=selected.Id,Enrichment=null});status.Text="Linked: "+Label(selected);}
     }
 }

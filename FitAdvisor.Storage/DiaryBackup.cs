@@ -10,6 +10,8 @@ public sealed record BackupWeight(WeightRecord Record, DateTimeOffset CreatedAt,
 public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, ProfileRevision[] Profiles,
     DailyTargetSnapshot[] Targets, BackupMeal[] Meals, BackupWeight[] Weights, WorkoutRecord[] Workouts)
 {
+    public SavedFood[] SavedFoods { get; init; } = [];
+    public GymRoutine[] GymRoutines { get; init; } = [];
     public HabitRecord[] Habits { get; init; } = [];
     public GymSession[] GymSessions { get; init; } = [];
     public GymExercise[] GymExercises { get; init; } = [];
@@ -21,8 +23,13 @@ public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, P
     public void Validate()
     {
         if (Profiles == null || Targets == null || Meals == null || Weights == null || Workouts == null) throw new ArgumentException("Incomplete backup.");
-        if (FormatVersion is not (1 or 2 or 3 or 4 or 5) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
+        if (FormatVersion is not (1 or 2 or 3 or 4 or 5 or 6) || ExportedAt == default) throw new ArgumentException("Unsupported backup version.");
         if (GymSessions == null || GymExercises == null || GymPreferences == null || GymSessions.Length > 10000 || GymExercises.Length > 10000) throw new ArgumentException("Invalid gym backup.");
+        if (SavedFoods == null || GymRoutines == null || SavedFoods.Length > 10000 || GymRoutines.Length > 1000) throw new ArgumentException("Invalid saved products/routines.");
+        foreach (var food in SavedFoods) food.Validate();
+        foreach (var routine in GymRoutines) routine.Validate();
+        if (SavedFoods.Select(f=>f.Id).Distinct().Count()!=SavedFoods.Length || GymRoutines.Select(r=>r.Id).Distinct().Count()!=GymRoutines.Length) throw new ArgumentException("Duplicate product/routine IDs.");
+        if (FormatVersion < 6 && (SavedFoods.Length > 0 || GymRoutines.Length > 0)) throw new ArgumentException("Products and routines require format 6.");
         GymPreferences.Validate();
         foreach (var e in GymExercises) { e.Validate(); if (!e.Custom || GymCatalogue.Starter.Any(s => s.Id == e.Id)) throw new ArgumentException("Invalid custom exercise."); }
         foreach (var s in GymSessions) s.Validate();
@@ -33,6 +40,10 @@ public sealed record DiaryBackup(int FormatVersion, DateTimeOffset ExportedAt, P
         if (GymSessions.Where(s => s.Status == "finished").Any(s => !Workouts.Any(w => w.Id == s.WorkoutId && w.IsCompleted && w.IsManual && w.Kind == "gym"))) throw new ArgumentException("Broken gym workout reference.");
         var links = GymSessions.Where(s => s.ImportedWorkoutId != null).ToArray();
         if (links.Select(s => s.ImportedWorkoutId).Distinct().Count() != links.Length || links.Any(s => !Workouts.Any(w => w.Id == s.ImportedWorkoutId && !w.IsManual && w.Kind == "gym" && w.StartTime < s.FinishedAt && w.StartTime!.Value.AddSeconds(w.DurationSeconds) > s.StartedAt))) throw new ArgumentException("Broken imported gym link.");
+        foreach(var session in GymSessions.Where(s=>s.Enrichment!=null)) {
+            var sensor=session.Enrichment!;var import=Workouts.Single(w=>w.Id==session.ImportedWorkoutId);
+            if(sensor.SourcePackage!=import.SourcePackage || sensor.From<session.StartedAt || sensor.Through>session.FinishedAt || sensor.From<import.StartTime || sensor.Through>import.StartTime!.Value.AddSeconds(import.DurationSeconds))throw new ArgumentException("Sensor snapshot origin/time mismatch.");
+        }
         if (Habits == null || HabitGoals == null || HabitSettings == null) throw new ArgumentException("Incomplete habit backup.");
         HabitSettings.Validate();
         foreach (var goal in HabitGoals) goal.Validate();

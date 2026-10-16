@@ -25,7 +25,7 @@ public static class MauiProgram
         Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping(nameof(Editor.TextColor), (handler, view) => TintInput(handler.PlatformView, view.TextColor));
         Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("ReadableLabels", (handler, _) => {
             handler.PlatformView.SetSingleLine(false);
-            handler.PlatformView.SetMaxLines(4);
+            handler.PlatformView.SetMaxLines(100);
         });
 #endif
         var builder = MauiApp.CreateBuilder().UseMauiApp<App>();
